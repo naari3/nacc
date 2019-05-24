@@ -60,12 +60,29 @@ int consume(int ty) {
 
 void error_at(char *loc, char *msg);
 
+// expr       = equality
+// equality   = relational ("==" relational | "!=" relational)*
+// relational = add ("<" add | "<=" add | ">" add | ">=" add)*
+// add        = mul ("+" mul | "-" mul)*
+// mul        = unary ("*" unary | "/" unary)*
+// unary      = ("+" | "-")? term
+// term       = num | "(" expr ")"
+
 Node *expr();
+Node *equality();
+Node *relational();
+Node *add();
 Node *mul();
 Node *unary();
 Node *term();
 
-Node *expr() {
+Node *expr() { return equality(); };
+
+Node *equality() { return relational(); };
+
+Node *relational() { return add(); };
+
+Node *add() {
   Node *node = mul();
 
   for (;;) {

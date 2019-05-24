@@ -9,15 +9,13 @@ enum {
   TK_NUM = 256,  // 整数トークン
   TK_EQ = 255,   // ==トークン
   TK_NE = 254,   // !=トークン
-  TK_LE = 253,   // <=トークン
-  TK_LT = 252,   // <トークン
-  TK_GE = 251,   // >=トークン
-  TK_GT = 250,   // >トークン
+  TK_LE = 251,   // <=トークン なぜか253だとループに陥る
+  TK_GE = 252,   // >=トークン
   TK_EOF,        // 入力の終わりを表すトークン
 };
 
 enum {
-  ND_NUM = 256,  // 整数のノードの型
+  ND_NUM = 256,  // 整数のノードの型a
 };
 
 typedef struct Node {
@@ -84,9 +82,36 @@ Node *term();
 
 Node *expr() { return equality(); };
 
-Node *equality() { return relational(); };
+Node *equality() {
+  Node *node = relational();
+  for (;;) {
+    if (consume(TK_EQ))
+      node = new_node(TK_EQ, node, relational());
+    else if (consume(TK_NE))
+      node = new_node(TK_NE, node, relational());
+    else
+      return node;
+  }
+};
 
-Node *relational() { return add(); };
+Node *relational() {
+  Node *node = add();
+  // return node;
+
+  for (;;) {
+    // printf("%s\n", tokens[pos].input);
+    if (consume('<'))
+      node = new_node('<', node, add());
+    else if (consume('>'))
+      node = new_node('>', node, add());
+    else if (consume(TK_LE))
+      node = new_node(TK_LE, node, add());
+    else if (consume(TK_GE))
+      node = new_node(TK_GE, node, add());
+    else
+      return node;
+  }
+};
 
 Node *add() {
   Node *node = mul();
@@ -169,8 +194,28 @@ void tokenize() {
       continue;
     }
 
-    if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' ||
-        *p == ')') {
+    if (strncmp(p, "==", 2) == 0 || strncmp(p, "!=", 2) == 0 ||
+        strncmp(p, "<=", 2) == 0 || strncmp(p, ">=", 2) == 0) {
+      if (strncmp(p, "==", 2) == 0) {
+        tokens[i].ty = TK_EQ;
+      } else if (strncmp(p, "!=", 2) == 0) {
+        tokens[i].ty = TK_NE;
+      } else if (strncmp(p, "<=", 2) == 0) {
+        tokens[i].ty = TK_LE;
+      } else if (strncmp(p, ">=", 2) == 0) {
+        tokens[i].ty = TK_GE;
+      }
+      tokens[i].input = p;
+      i++;
+      p++;
+      p++;  // 2文字なので
+      continue;
+    }
+
+    if (strncmp(p, "<", 1) == 0 || strncmp(p, ">", 1) == 0 ||
+        strncmp(p, "+", 1) == 0 || strncmp(p, "-", 1) == 0 ||
+        strncmp(p, "*", 1) == 0 || strncmp(p, "/", 1) == 0 ||
+        strncmp(p, "(", 1) == 0 || strncmp(p, ")", 1) == 0) {
       tokens[i].ty = *p;
       tokens[i].input = p;
       i++;

@@ -60,18 +60,11 @@ int consume(int ty) {
   return 1;
 }
 
-Node *mul() {
-  Node *node = new_node_num(tokens[pos++].val);;
+void error_at(char *loc, char *msg);
 
-  for (;;) {
-    if (consume('*'))
-      node = new_node('*', node, new_node_num(tokens[pos++].val));
-    else if (consume('/'))
-      node = new_node('/', node, new_node_num(tokens[pos++].val));
-    else
-      return node;
-  }
-}
+Node *expr();
+Node *mul();
+Node *term();
 
 Node *expr() {
   Node *node = mul();
@@ -84,6 +77,37 @@ Node *expr() {
     else
       return node;
   }
+}
+
+Node *mul() {
+  Node *node = term();
+
+  for (;;) {
+    if (consume('*'))
+      node = new_node('*', node, term());
+    else if (consume('/'))
+      node = new_node('/', node, term());
+    else
+      return node;
+  }
+}
+
+Node *term() {
+  // 次のトークンが'('なら、"(" expr ")"のはず
+  if (consume('(')) {
+    Node *node = expr();
+    if (!consume(')'))
+      error_at(tokens[pos].input,
+               "開きカッコに対応する閉じカッコがありません");
+    return node;
+  }
+
+  // そうでなければ数値のはず
+  if (tokens[pos].ty == TK_NUM)
+    return new_node_num(tokens[pos++].val);
+
+  error_at(tokens[pos].input,
+           "数値でも開きカッコでもないトークンです");
 }
 
 
@@ -119,7 +143,7 @@ void tokenize() {
       continue;
     }
 
-    if (*p == '+' || *p == '-' || *p == '*' || *p == '/') {
+    if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')') {
       tokens[i].ty = *p;
       tokens[i].input = p;
       i++;

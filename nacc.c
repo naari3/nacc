@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 // トークンの型を表す値
 enum {
   TK_NUM = 256, // 整数トークン
@@ -12,7 +11,7 @@ enum {
 };
 
 enum {
-  ND_NUM = 256,     // 整数のノードの型
+  ND_NUM = 256, // 整数のノードの型
 };
 
 typedef struct Node {
@@ -106,8 +105,7 @@ Node *term() {
   if (consume('(')) {
     Node *node = expr();
     if (!consume(')'))
-      error_at(tokens[pos].input,
-               "開きカッコに対応する閉じカッコがありません");
+      error_at(tokens[pos].input, "開きカッコに対応する閉じカッコがありません");
     return node;
   }
 
@@ -115,10 +113,8 @@ Node *term() {
   if (tokens[pos].ty == TK_NUM)
     return new_node_num(tokens[pos++].val);
 
-  error_at(tokens[pos].input,
-           "数値でも開きカッコでもないトークンです");
+  error_at(tokens[pos].input, "数値でも開きカッコでもないトークンです");
 }
-
 
 // エラーを報告するための関数
 // printfと同じ引数を取る
@@ -152,7 +148,8 @@ void tokenize() {
       continue;
     }
 
-    if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')') {
+    if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' ||
+        *p == ')') {
       tokens[i].ty = *p;
       tokens[i].input = p;
       i++;
@@ -200,12 +197,10 @@ void gen(Node *node) {
   case '/':
     printf("  cqo\n");
     printf("  idiv rdi\n");
-
   }
 
   printf("  push rax\n");
 }
-
 
 int main(int argc, char **argv) {
   if (argc != 2) {

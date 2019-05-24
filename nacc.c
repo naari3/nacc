@@ -71,6 +71,8 @@ Node *expr() {
       node = new_node('-', node, expr());
     else if (consume('*'))
       node = new_node('*', node, expr());
+    else if (consume('/'))
+      node = new_node('/', node, expr());
     else
       return node;
   }
@@ -109,7 +111,7 @@ void tokenize() {
       continue;
     }
 
-    if (*p == '+' || *p == '-' || *p == '*') {
+    if (*p == '+' || *p == '-' || *p == '*' || *p == '/') {
       tokens[i].ty = *p;
       tokens[i].input = p;
       i++;
@@ -154,6 +156,10 @@ void gen(Node *node) {
   case '*':
     printf("  imul rdi\n");
     break;
+  case '/':
+    printf("  cqo\n");
+    printf("  idiv rdi\n");
+
   }
 
   printf("  push rax\n");

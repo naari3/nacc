@@ -60,19 +60,27 @@ int consume(int ty) {
   return 1;
 }
 
+Node *mul() {
+  Node *node = new_node_num(tokens[pos++].val);;
+
+  for (;;) {
+    if (consume('*'))
+      node = new_node('*', node, new_node_num(tokens[pos++].val));
+    else if (consume('/'))
+      node = new_node('/', node, new_node_num(tokens[pos++].val));
+    else
+      return node;
+  }
+}
 
 Node *expr() {
-  Node *node = new_node_num(tokens[pos++].val);
+  Node *node = mul();
 
   for (;;) {
     if (consume('+'))
-      node = new_node('+', node, expr());
+      node = new_node('+', node, mul());
     else if (consume('-'))
-      node = new_node('-', node, expr());
-    else if (consume('*'))
-      node = new_node('*', node, expr());
-    else if (consume('/'))
-      node = new_node('/', node, expr());
+      node = new_node('-', node, mul());
     else
       return node;
   }

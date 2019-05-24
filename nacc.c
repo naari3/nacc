@@ -6,26 +6,26 @@
 
 // トークンの型を表す値
 enum {
-  TK_NUM = 256, // 整数トークン
-  TK_EOF,       // 入力の終わりを表すトークン
+  TK_NUM = 256,  // 整数トークン
+  TK_EOF,        // 入力の終わりを表すトークン
 };
 
 enum {
-  ND_NUM = 256, // 整数のノードの型
+  ND_NUM = 256,  // 整数のノードの型
 };
 
 typedef struct Node {
-  int ty;           // 演算子かND_NUM
-  struct Node *lhs; // 左辺
-  struct Node *rhs; // 右辺
-  int val;          // tyがND_NUMの場合のみ使う
+  int ty;            // 演算子かND_NUM
+  struct Node *lhs;  // 左辺
+  struct Node *rhs;  // 右辺
+  int val;           // tyがND_NUMの場合のみ使う
 } Node;
 
 // トークンの型
 typedef struct {
-  int ty;      // トークンの型
-  int val;     // tyがTK_NUMの場合、その数値
-  char *input; // トークン文字列（エラーメッセージ用）
+  int ty;       // トークンの型
+  int val;      // tyがTK_NUMの場合、その数値
+  char *input;  // トークン文字列（エラーメッセージ用）
 } Token;
 
 // 入力プログラム
@@ -53,8 +53,7 @@ Node *new_node_num(int val) {
 }
 
 int consume(int ty) {
-  if (tokens[pos].ty != ty)
-    return 0;
+  if (tokens[pos].ty != ty) return 0;
   pos++;
   return 1;
 }
@@ -110,8 +109,7 @@ Node *term() {
   }
 
   // そうでなければ数値のはず
-  if (tokens[pos].ty == TK_NUM)
-    return new_node_num(tokens[pos++].val);
+  if (tokens[pos].ty == TK_NUM) return new_node_num(tokens[pos++].val);
 
   error_at(tokens[pos].input, "数値でも開きカッコでもないトークンです");
 }
@@ -130,7 +128,7 @@ void error(char *fmt, ...) {
 void error_at(char *loc, char *msg) {
   int pos = loc - user_input;
   fprintf(stderr, "%s\n", user_input);
-  fprintf(stderr, "%*s", pos, ""); // pos個の空白を出力
+  fprintf(stderr, "%*s", pos, "");  // pos個の空白を出力
   fprintf(stderr, "^ %s\n", msg);
   exit(1);
 }
@@ -185,18 +183,18 @@ void gen(Node *node) {
   printf("  pop rax\n");
 
   switch (node->ty) {
-  case '+':
-    printf("  add rax, rdi\n");
-    break;
-  case '-':
-    printf("  sub rax, rdi\n");
-    break;
-  case '*':
-    printf("  imul rdi\n");
-    break;
-  case '/':
-    printf("  cqo\n");
-    printf("  idiv rdi\n");
+    case '+':
+      printf("  add rax, rdi\n");
+      break;
+    case '-':
+      printf("  sub rax, rdi\n");
+      break;
+    case '*':
+      printf("  imul rdi\n");
+      break;
+    case '/':
+      printf("  cqo\n");
+      printf("  idiv rdi\n");
   }
 
   printf("  push rax\n");

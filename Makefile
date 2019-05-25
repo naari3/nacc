@@ -1,6 +1,7 @@
 nacc: nacc.c
 
 test: nacc
+		./nacc -test
 		./test.sh
 
 clean:

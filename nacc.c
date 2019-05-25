@@ -263,6 +263,36 @@ void gen(Node *node) {
     case '/':
       printf("  cqo\n");
       printf("  idiv rdi\n");
+      break;
+    case TK_EQ:
+    case TK_NE:
+      printf("  cmp rax, rdi\n");
+      if (node->ty == TK_EQ) {
+        printf("  sete al\n");
+      } else {
+        printf("  setne al\n");
+      }
+      printf("  movzb rax, al\n");
+      break;
+    case '<':
+    case '>':
+      if (node->ty == '<') {
+        printf("  cmp rax, rdi\n");
+      } else {
+        printf("  cmp rdi, rax\n");
+      }
+      printf("  setl al\n");
+      printf("  movzb rax, al\n");
+      break;
+    case TK_LE:
+    case TK_GE:
+      if (node->ty == TK_LE) {
+        printf("  cmp rax, rdi\n");
+      } else {
+        printf("  cmp rdi, rax\n");
+      }
+      printf("  setle al\n");
+      printf("  movzb rax, al\n");
   }
 
   printf("  push rax\n");

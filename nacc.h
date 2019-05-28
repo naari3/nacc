@@ -20,6 +20,7 @@ enum {
   TK_LE,         // <=トークン
   TK_GE,         // >=トークン
   TK_EOF,        // 入力の終わりを表すトークン
+  TK_IDENT,      // 識別子トークン
 };
 
 enum {
@@ -37,7 +38,7 @@ typedef struct Node {
   int val;           // tyがND_NUMの場合のみ使う
 } Node;
 
-Node *expr();
+Node *parse();
 
 void gen(Node *node);
 

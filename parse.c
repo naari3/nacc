@@ -42,6 +42,7 @@ int consume(int ty) {
   return 1;
 }
 
+// stmt       = expr ";"
 // expr       = equality
 // equality   = relational ("==" relational | "!=" relational)*
 // relational = add ("<" add | "<=" add | ">" add | ">=" add)*
@@ -50,6 +51,7 @@ int consume(int ty) {
 // unary      = ("+" | "-")? term
 // term       = num | "(" expr ")"
 
+Node *stmt();
 Node *expr();
 Node *equality();
 Node *relational();
@@ -58,6 +60,14 @@ Node *mul();
 Node *unary();
 Node *term();
 
+Node *parse() { return stmt(); };
+Node *stmt() {
+  Node *node = expr();
+    if (!consume(';'))
+      error_at(((Token *)tokens->data[pos])->input, "';'ではないトークンです");
+
+  return node;
+};
 Node *expr() { return equality(); };
 
 Node *equality() {
@@ -153,6 +163,14 @@ void tokenize(char *p) {
       continue;
     }
 
+    if ('a' <= *p && *p <= 'z') {
+      Token *token = malloc(sizeof(Token));
+      token->ty = TK_IDENT;
+      token->input = p;
+      p++;
+      vec_push(tokens, token);
+    }
+
     if (strncmp(p, "==", 2) == 0 || strncmp(p, "!=", 2) == 0 ||
         strncmp(p, "<=", 2) == 0 || strncmp(p, ">=", 2) == 0) {
       Token *token = malloc(sizeof(Token));
@@ -175,7 +193,8 @@ void tokenize(char *p) {
     if (strncmp(p, "<", 1) == 0 || strncmp(p, ">", 1) == 0 ||
         strncmp(p, "+", 1) == 0 || strncmp(p, "-", 1) == 0 ||
         strncmp(p, "*", 1) == 0 || strncmp(p, "/", 1) == 0 ||
-        strncmp(p, "(", 1) == 0 || strncmp(p, ")", 1) == 0) {
+        strncmp(p, "(", 1) == 0 || strncmp(p, ")", 1) == 0 ||
+        strncmp(p, ";", 1) == 0) {
       Token *token = malloc(sizeof(Token));
       token->ty = *p;
       token->input = p;

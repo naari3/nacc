@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
   pos = 0;
 
   tokenize(user_input);
-  Node *node = expr();
+  Node *node = parse();
 
   // アセンブリの前半部分を出力
   printf(".intel_syntax noprefix\n");

@@ -1,4 +1,12 @@
-nacc: nacc.c
+CFLAGS=-Wall -std=c11
+SRCS=$(wildcard *.c)
+OBJS=$(SRCS:.c=.o)
+
+nacc: $(OBJS)
+		$(CC) -o nacc $(OBJS) $(LDFLAGS)
+
+$(OBJS): nacc.h
+
 
 test: nacc
 		./nacc -test

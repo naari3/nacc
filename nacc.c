@@ -1,46 +1,4 @@
-#include <ctype.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-// トークンの型を表す値
-enum {
-  TK_NUM = 256,  // 整数トークン
-  TK_EQ,         // ==トークン
-  TK_NE,         // !=トークン
-  TK_LE,         // <=トークン
-  TK_GE,         // >=トークン
-  TK_EOF,        // 入力の終わりを表すトークン
-};
-
-enum {
-  ND_NUM = 256,  // 整数ノード
-  ND_EQ,         // ==ノード
-  ND_NE,         // !=ノード
-  ND_LE,         // <=ノード
-  ND_GE,         // >=ノード
-};
-
-typedef struct Node {
-  int ty;            // 演算子かND_NUM
-  struct Node *lhs;  // 左辺
-  struct Node *rhs;  // 右辺
-  int val;           // tyがND_NUMの場合のみ使う
-} Node;
-
-// トークンの型
-typedef struct {
-  int ty;       // トークンの型
-  int val;      // tyがTK_NUMの場合、その数値
-  char *input;  // トークン文字列（エラーメッセージ用）
-} Token;
-
-typedef struct {
-  void **data;
-  int capacity;
-  int len;
-} Vector;
+#include "nacc.h"
 
 Vector *new_vector() {
   Vector *vec = malloc(sizeof(Vector));
@@ -82,14 +40,8 @@ void runtest() {
   printf("OK\n");
 }
 
-// 入力プログラム
-char *user_input;
-
 int pos = 0;
-
-// トークナイズした結果のトークン列はこの配列に保存する
-// 100個以上のトークンは来ないものとする
-Vector *tokens;
+char *user_input;
 
 Node *new_node(int ty, Node *lhs, Node *rhs) {
   Node *node = malloc(sizeof(Node));
@@ -111,8 +63,6 @@ int consume(int ty) {
   pos++;
   return 1;
 }
-
-void error_at(char *loc, char *msg);
 
 // expr       = equality
 // equality   = relational ("==" relational | "!=" relational)*

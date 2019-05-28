@@ -85,7 +85,7 @@ int pos = 0;
 
 // トークナイズした結果のトークン列はこの配列に保存する
 // 100個以上のトークンは来ないものとする
-Token tokens[100];
+Vector *tokens;
 
 Node *new_node(int ty, Node *lhs, Node *rhs) {
   Node *node = malloc(sizeof(Node));
@@ -103,7 +103,7 @@ Node *new_node_num(int val) {
 }
 
 int consume(int ty) {
-  if (tokens[pos].ty != ty) return 0;
+  if (((Token *)tokens->data[pos])->ty != ty) return 0;
   pos++;
   return 1;
 }
@@ -198,14 +198,17 @@ Node *term() {
   if (consume('(')) {
     Node *node = expr();
     if (!consume(')'))
-      error_at(tokens[pos].input, "開きカッコに対応する閉じカッコがありません");
+      error_at(((Token *)tokens->data[pos])->input,
+               "開きカッコに対応する閉じカッコがありません");
     return node;
   }
 
   // そうでなければ数値のはず
-  if (tokens[pos].ty == TK_NUM) return new_node_num(tokens[pos++].val);
+  if (((Token *)tokens->data[pos])->ty == TK_NUM)
+    return new_node_num(((Token *)tokens->data[pos++])->val);
 
-  error_at(tokens[pos].input, "数値でも開きカッコでもないトークンです");
+  error_at(((Token *)tokens->data[pos])->input,
+           "数値でも開きカッコでもないトークンです");
 }
 
 // エラーを報告するための関数
@@ -229,10 +232,7 @@ void error_at(char *loc, char *msg) {
 
 // user_inputが指している文字列を
 // トークンに分割してtokensに保存する
-void tokenize() {
-  char *p = user_input;
-
-  int i = 0;
+void *tokenize(char *p) {
   while (*p) {
     // 空白文字をスキップ
     if (isspace(*p)) {
@@ -242,19 +242,20 @@ void tokenize() {
 
     if (strncmp(p, "==", 2) == 0 || strncmp(p, "!=", 2) == 0 ||
         strncmp(p, "<=", 2) == 0 || strncmp(p, ">=", 2) == 0) {
+      Token *token = malloc(sizeof(Token));
       if (strncmp(p, "==", 2) == 0) {
-        tokens[i].ty = TK_EQ;
+        token->ty = TK_EQ;
       } else if (strncmp(p, "!=", 2) == 0) {
-        tokens[i].ty = TK_NE;
+        token->ty = TK_NE;
       } else if (strncmp(p, "<=", 2) == 0) {
-        tokens[i].ty = TK_LE;
+        token->ty = TK_LE;
       } else if (strncmp(p, ">=", 2) == 0) {
-        tokens[i].ty = TK_GE;
+        token->ty = TK_GE;
       }
-      tokens[i].input = p;
-      i++;
+      token->input = p;
       p++;
       p++;  // 2文字なので
+      vec_push(tokens, token);
       continue;
     }
 
@@ -262,26 +263,30 @@ void tokenize() {
         strncmp(p, "+", 1) == 0 || strncmp(p, "-", 1) == 0 ||
         strncmp(p, "*", 1) == 0 || strncmp(p, "/", 1) == 0 ||
         strncmp(p, "(", 1) == 0 || strncmp(p, ")", 1) == 0) {
-      tokens[i].ty = *p;
-      tokens[i].input = p;
-      i++;
+      Token *token = malloc(sizeof(Token));
+      token->ty = *p;
+      token->input = p;
       p++;
+      vec_push(tokens, token);
       continue;
     }
 
     if (isdigit(*p)) {
-      tokens[i].ty = TK_NUM;
-      tokens[i].input = p;
-      tokens[i].val = strtol(p, &p, 10);
-      i++;
+      Token *token = malloc(sizeof(Token));
+      token->ty = TK_NUM;
+      token->input = p;
+      token->val = strtol(p, &p, 10);
+      vec_push(tokens, token);
       continue;
     }
 
     error_at(p, "トークナイズできません");
   }
 
-  tokens[i].ty = TK_EOF;
-  tokens[i].input = p;
+  Token *token = malloc(sizeof(Token));
+  token->ty = TK_EOF;
+  token->input = p;
+  vec_push(tokens, token);
 }
 
 void gen(Node *node) {
@@ -356,7 +361,11 @@ int main(int argc, char **argv) {
     runtest();
     return 0;
   }
-  tokenize();
+
+  tokens = new_vector();
+  pos = 0;
+
+  tokenize(user_input);
   Node *node = expr();
 
   // アセンブリの前半部分を出力

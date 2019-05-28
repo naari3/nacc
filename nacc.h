@@ -29,6 +29,7 @@ enum {
   ND_NE,         // !=ノード
   ND_LE,         // <=ノード
   ND_GE,         // >=ノード
+  ND_IDENT,      // 識別子ノード
 };
 
 typedef struct Node {
@@ -36,6 +37,7 @@ typedef struct Node {
   struct Node *lhs;  // 左辺
   struct Node *rhs;  // 右辺
   int val;           // tyがND_NUMの場合のみ使う
+  char name;         // tyがND_IDENTの場合のみ使う
 } Node;
 
 void parse(char *codestr);

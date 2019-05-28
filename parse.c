@@ -37,6 +37,13 @@ Node *new_node_num(int val) {
   return node;
 }
 
+Node *new_node_ident(char name) {
+  Node *node = malloc(sizeof(Node));
+  node->ty = ND_IDENT;
+  node->name = name;
+  return node;
+}
+
 int consume(int ty) {
   if (((Token *)tokens->data[pos])->ty != ty) return 0;
   pos++;
@@ -45,17 +52,19 @@ int consume(int ty) {
 
 // program    = stmt*
 // stmt       = expr ";"
-// expr       = equality
+// expr       = assign
+// assign     = equality ("=" assign)?
 // equality   = relational ("==" relational | "!=" relational)*
 // relational = add ("<" add | "<=" add | ">" add | ">=" add)*
 // add        = mul ("+" mul | "-" mul)*
 // mul        = unary ("*" unary | "/" unary)*
 // unary      = ("+" | "-")? term
-// term       = num | "(" expr ")"
+// term       = num | ident | "(" expr ")"
 
 void program();
 Node *stmt();
 Node *expr();
+Node *assign();
 Node *equality();
 Node *relational();
 Node *add();
@@ -84,7 +93,12 @@ Node *stmt() {
   return node;
 };
 
-Node *expr() { return equality(); };
+Node *expr() { return assign(); };
+Node *assign() {
+  Node *node = equality();
+  if (consume('=')) node = new_node('=', node, assign());
+  return node;
+};
 
 Node *equality() {
   Node *node = relational();
@@ -165,6 +179,9 @@ Node *term() {
   if (((Token *)tokens->data[pos])->ty == TK_NUM)
     return new_node_num(((Token *)tokens->data[pos++])->val);
 
+  if (((Token *)tokens->data[pos])->ty == TK_IDENT)
+    return new_node_ident(((Token *)tokens->data[pos++])->input[0]);
+
   error_at(((Token *)tokens->data[pos])->input,
            "数値でも開きカッコでもないトークンです");
 }
@@ -185,6 +202,7 @@ void tokenize(char *p) {
       token->input = p;
       p++;
       vec_push(tokens, token);
+      continue;
     }
 
     if (strncmp(p, "==", 2) == 0 || strncmp(p, "!=", 2) == 0 ||
@@ -210,7 +228,7 @@ void tokenize(char *p) {
         strncmp(p, "+", 1) == 0 || strncmp(p, "-", 1) == 0 ||
         strncmp(p, "*", 1) == 0 || strncmp(p, "/", 1) == 0 ||
         strncmp(p, "(", 1) == 0 || strncmp(p, ")", 1) == 0 ||
-        strncmp(p, ";", 1) == 0) {
+        strncmp(p, ";", 1) == 0 || strncmp(p, "=", 1) == 0) {
       Token *token = malloc(sizeof(Token));
       token->ty = *p;
       token->input = p;

@@ -11,7 +11,6 @@
 #include <string.h>
 
 void error(char *fmt, ...);
-void error_at(char *loc, char *msg);
 
 // トークンの型を表す値
 enum {
@@ -38,7 +37,8 @@ typedef struct Node {
   int val;           // tyがND_NUMの場合のみ使う
 } Node;
 
-Node *parse();
+Node *expr();
+
 void gen(Node *node);
 
 // トークンの型
@@ -47,6 +47,8 @@ typedef struct {
   int val;      // tyがTK_NUMの場合、その数値
   char *input;  // トークン文字列（エラーメッセージ用）
 } Token;
+
+void tokenize(char *p);
 
 typedef struct {
   void **data;

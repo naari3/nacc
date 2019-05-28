@@ -61,4 +61,7 @@ try 4 '1 * 2; 2 / 2; 3 + 1;'
 try 42 'a = 20;b = a + 22;b;'
 try 1 'a = 10;a - 5 == 5;'
 
+try 1 'return 1;'
+try 1 'return 1; 2;'
+
 echo OK

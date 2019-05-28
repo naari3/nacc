@@ -15,7 +15,11 @@ enum {
 };
 
 enum {
-  ND_NUM = 256,  // 整数のノードの型a
+  ND_NUM = 256,  // 整数ノード
+  ND_EQ,         // ==ノード
+  ND_NE,         // !=ノード
+  ND_LE,         // <=ノード
+  ND_GE,         // >=ノード
 };
 
 typedef struct Node {
@@ -131,10 +135,10 @@ Node *expr() { return equality(); };
 Node *equality() {
   Node *node = relational();
   for (;;) {
-    if (consume(TK_EQ))
-      node = new_node(TK_EQ, node, relational());
-    else if (consume(TK_NE))
-      node = new_node(TK_NE, node, relational());
+    if (consume(ND_EQ))
+      node = new_node(ND_EQ, node, relational());
+    else if (consume(ND_NE))
+      node = new_node(ND_NE, node, relational());
     else
       return node;
   }
@@ -150,10 +154,10 @@ Node *relational() {
       node = new_node('<', node, add());
     else if (consume('>'))
       node = new_node('>', node, add());
-    else if (consume(TK_LE))
-      node = new_node(TK_LE, node, add());
-    else if (consume(TK_GE))
-      node = new_node(TK_GE, node, add());
+    else if (consume(ND_LE))
+      node = new_node(ND_LE, node, add());
+    else if (consume(ND_GE))
+      node = new_node(ND_GE, node, add());
     else
       return node;
   }
@@ -315,8 +319,8 @@ void gen(Node *node) {
       printf("  cqo\n");
       printf("  idiv rdi\n");
       break;
-    case TK_EQ:
-    case TK_NE:
+    case ND_EQ:
+    case ND_NE:
       printf("  cmp rax, rdi\n");
       if (node->ty == TK_EQ) {
         printf("  sete al\n");
@@ -335,8 +339,8 @@ void gen(Node *node) {
       printf("  setl al\n");
       printf("  movzb rax, al\n");
       break;
-    case TK_LE:
-    case TK_GE:
+    case ND_LE:
+    case ND_GE:
       if (node->ty == TK_LE) {
         printf("  cmp rax, rdi\n");
       } else {

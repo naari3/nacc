@@ -1,7 +1,6 @@
 #include "nacc.h"
 
 char *user_input;
-int pos;
 
 int main(int argc, char **argv) {
   if (argc != 2) {
@@ -16,11 +15,7 @@ int main(int argc, char **argv) {
     return 0;
   }
 
-  tokens = new_vector();
-  pos = 0;
-
-  tokenize(user_input);
-  Node *node = parse();
+  parse(user_input);
 
   // アセンブリの前半部分を出力
   printf(".intel_syntax noprefix\n");
@@ -28,11 +23,13 @@ int main(int argc, char **argv) {
   printf("main:\n");
 
   // 抽象構文木を下りながらコード生成
-  gen(node);
+  for (int i = 0; code[i]; i++) {
+    gen(code[i]);
+    printf("  pop rax\n");
+  }
 
   // スタックトップに式全体の値が残っているはずなので
   // それをRAXにロードして関数からの返り値とする
-  printf("  pop rax\n");
   printf("  ret\n");
   return 0;
 }

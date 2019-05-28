@@ -1,6 +1,7 @@
 #include "nacc.h"
 
 int pos;
+Node *code[100];
 
 // エラーを報告するための関数
 // printfと同じ引数を取る
@@ -42,6 +43,7 @@ int consume(int ty) {
   return 1;
 }
 
+// program    = stmt*
 // stmt       = expr ";"
 // expr       = equality
 // equality   = relational ("==" relational | "!=" relational)*
@@ -51,6 +53,7 @@ int consume(int ty) {
 // unary      = ("+" | "-")? term
 // term       = num | "(" expr ")"
 
+void program();
 Node *stmt();
 Node *expr();
 Node *equality();
@@ -60,14 +63,27 @@ Node *mul();
 Node *unary();
 Node *term();
 
-Node *parse() { return stmt(); };
+void parse(char *codestr) {
+  tokens = new_vector();
+  tokenize(codestr);
+  pos = 0;
+  program();
+};
+
+void program() {
+  int i = 0;
+  while (((Token *)tokens->data[pos])->ty != TK_EOF) code[i++] = stmt();
+  code[i] = NULL;
+}
+
 Node *stmt() {
   Node *node = expr();
-    if (!consume(';'))
-      error_at(((Token *)tokens->data[pos])->input, "';'ではないトークンです");
+  if (!consume(';'))
+    error_at(((Token *)tokens->data[pos])->input, "';'ではないトークンです");
 
   return node;
 };
+
 Node *expr() { return equality(); };
 
 Node *equality() {

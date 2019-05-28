@@ -38,9 +38,11 @@ typedef struct Node {
   int val;           // tyがND_NUMの場合のみ使う
 } Node;
 
-Node *parse();
+void parse(char *codestr);
 
 void gen(Node *node);
+
+extern Node *code[];
 
 // トークンの型
 typedef struct {

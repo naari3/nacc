@@ -81,6 +81,7 @@ Node *term();
 void parse(char *codestr) {
   tokens = new_vector();
   tokenize(codestr);
+  vars = new_map();
   pos = 0;
   program();
 };
@@ -194,16 +195,20 @@ Node *term() {
   if (((Token *)tokens->data[pos])->ty == TK_NUM)
     return new_node_num(((Token *)tokens->data[pos++])->val);
 
-  if (((Token *)tokens->data[pos])->ty == TK_IDENT)
-    return new_node_ident(((Token *)tokens->data[pos++])->input[0]);
+  if (((Token *)tokens->data[pos])->ty == TK_IDENT) {
+    map_put(vars, ((Token *)tokens->data[pos])->name,
+            new_int(8 * (vars->keys->len + 1)));
+    return new_node_ident(((Token *)tokens->data[pos++])->name);
+  }
 
   error_at(((Token *)tokens->data[pos])->input,
            "数値でも開きカッコでもないトークンです");
 }
 
+int is_al(char c) { return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z'); }
+
 int is_alnum(char c) {
-  return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') ||
-         ('0' <= c && c <= '9') || (c == '_');
+  return is_al(c) || ('0' <= c && c <= '9') || (c == '_');
 }
 
 // user_inputが指している文字列を
@@ -225,12 +230,17 @@ void tokenize(char *p) {
       continue;
     }
 
-    if ('a' <= *p && *p <= 'z') {
+    if (is_al(*p)) {
+      int token_len = 1;
+      while (is_al(p[token_len])) {
+        token_len++;
+      }
       Token *token = malloc(sizeof(Token));
       token->ty = TK_IDENT;
+      token->name = strndup(p, token_len);
       token->input = p;
-      p++;
       vec_push(tokens, token);
+      p += token_len;
       continue;
     }
 

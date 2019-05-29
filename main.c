@@ -1,6 +1,7 @@
 #include "nacc.h"
 
 char *user_input;
+Map *vars;
 
 int main(int argc, char **argv) {
   if (argc != 2) {
@@ -26,7 +27,7 @@ int main(int argc, char **argv) {
   // 変数26個分の領域を確保する
   printf("  push rbp\n");
   printf("  mov rbp, rsp\n");
-  printf("  sub rsp, 208\n");
+  printf("  sub rsp, %d\n", vars->keys->len * 8);
 
   // 抽象構文木を下りながらコード生成
   for (int i = 0; code[i]; i++) {

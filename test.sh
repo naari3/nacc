@@ -64,4 +64,6 @@ try 1 'a = 10;a - 5 == 5;'
 try 1 'return 1;'
 try 1 'return 1; 2;'
 
+try 1 'a = 10;b = 5;c = 15;abc = a + b + c;abc == 30;'
+
 echo OK

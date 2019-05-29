@@ -45,7 +45,7 @@ typedef struct Node {
   struct Node *lhs;  // 左辺
   struct Node *rhs;  // 右辺
   int val;           // tyがND_NUMの場合のみ使う
-  char name;         // tyがND_IDENTの場合のみ使う
+  char *name;         // tyがND_IDENTの場合のみ使う
 } Node;
 
 void parse(char *codestr);
@@ -58,6 +58,7 @@ extern Node *code[];
 typedef struct {
   int ty;       // トークンの型
   int val;      // tyがTK_NUMの場合、その数値
+  char *name;   // tyがTK_IDENTの場合、その名前
   char *input;  // トークン文字列（エラーメッセージ用）
 } Token;
 
@@ -84,6 +85,7 @@ typedef struct {
 Map *new_map();
 void map_put(Map *map, char *key, void *val);
 void *map_get(Map *map, char *key);
+extern Map *vars;
 
 extern int pos;
 extern char *user_input;

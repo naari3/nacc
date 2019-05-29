@@ -71,4 +71,8 @@ try 0 'if (0) return 1;0;'
 try 1 'a = 1;if (a) return 1;0;'
 try 0 'a = 0;if (a) return 1;0;'
 
+try 1 'if (1) return 1;else return 0;'
+try 0 'if (0) return 1;else return 0;'
+try 0 'a = 1;if (a - 1) 1;else return 0;'
+
 echo OK

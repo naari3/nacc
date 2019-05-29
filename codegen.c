@@ -1,6 +1,7 @@
 #include "nacc.h"
 
-int label_id = 0;
+int label_end_id = 0;
+int label_else_id = 0;
 
 void gen_lval(Node *node) {
   if (node->ty != ND_IDENT) error("代入の左辺値が変数ではありません");
@@ -38,10 +39,20 @@ void gen(Node *node) {
     gen(node->lhs);
     printf("  pop rax\n");
     printf("  cmp rax, 0\n");
-    printf("  je  .Lend%d\n", label_id);
-    gen(node->rhs);
-    printf(".Lend%d:\n", label_id);
-    label_id++;
+    if (node->rhs->ty == ND_ELSE) {
+      printf("  je  .Lelse%d\n", label_else_id);
+      gen(node->rhs->lhs);
+      printf("  je  .Lend%d\n", label_end_id);
+      printf(".Lelse%d:\n", label_end_id);
+      gen(node->rhs->rhs);
+      printf(".Lend%d:\n", label_end_id);
+      label_else_id++;
+    } else {
+      printf("  je  .Lend%d\n", label_end_id);
+      gen(node->rhs);
+      printf(".Lend%d:\n", label_end_id);
+    }
+    label_end_id++;
     return;
   }
 

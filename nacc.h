@@ -28,6 +28,7 @@ enum {
   TK_EOF,        // 入力の終わりを表すトークン
   TK_RETURN,     // returnトークン
   TK_IF,         // ifトークン
+  TK_ELSE,       // elseトークン
   TK_IDENT,      // 識別子トークン
 };
 
@@ -39,6 +40,7 @@ enum {
   ND_GE,         // >=ノード
   ND_RETURN,     // returnノード
   ND_IF,         // ifノード
+  ND_ELSE,       // elseノード
   ND_IDENT,      // 識別子ノード
 };
 

@@ -12,6 +12,12 @@
 
 void error(char *fmt, ...);
 
+typedef struct {
+  int num;
+} Int;
+
+Int *new_int(int i);
+
 // トークンの型を表す値
 enum {
   TK_NUM = 256,  // 整数トークン

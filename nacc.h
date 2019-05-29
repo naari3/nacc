@@ -27,6 +27,7 @@ enum {
   TK_GE,         // >=トークン
   TK_EOF,        // 入力の終わりを表すトークン
   TK_RETURN,     // returnトークン
+  TK_IF,         // ifトークン
   TK_IDENT,      // 識別子トークン
 };
 
@@ -37,6 +38,7 @@ enum {
   ND_LE,         // <=ノード
   ND_GE,         // >=ノード
   ND_RETURN,     // returnノード
+  ND_IF,         // ifノード
   ND_IDENT,      // 識別子ノード
 };
 
@@ -45,7 +47,7 @@ typedef struct Node {
   struct Node *lhs;  // 左辺
   struct Node *rhs;  // 右辺
   int val;           // tyがND_NUMの場合のみ使う
-  char *name;         // tyがND_IDENTの場合のみ使う
+  char *name;        // tyがND_IDENTの場合のみ使う
 } Node;
 
 void parse(char *codestr);

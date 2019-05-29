@@ -57,7 +57,9 @@ int consume(int ty) {
 }
 
 // program    = stmt*
-// stmt       = expr ";" | "return" expr ";"
+// stmt       = expr ";"
+//            | "if" "(" expr ")" stmt
+//            | "return" expr ";"
 // expr       = assign
 // assign     = equality ("=" assign)?
 // equality   = relational ("==" relational | "!=" relational)*
@@ -99,6 +101,20 @@ Node *stmt() {
     node = malloc(sizeof(Node));
     node->ty = ND_RETURN;
     node->lhs = expr();
+  } else if (consume(TK_IF)) {
+    node = malloc(sizeof(Node));
+    node->ty = ND_IF;
+    if (consume('(')) {
+      node->lhs = expr();
+      if (!consume(')'))
+        error_at(((Token *)tokens->data[pos])->input,
+                 "開きカッコに対応する閉じカッコがありません");
+      node->rhs = stmt();
+      return node;
+    } else {
+      error_at(((Token *)tokens->data[pos])->input,
+               "条件のカッコがありません");
+    }
   } else {
     node = expr();
   }
@@ -226,6 +242,15 @@ void tokenize(char *p) {
       token->ty = TK_RETURN;
       token->input = p;
       p += 6;
+      vec_push(tokens, token);
+      continue;
+    }
+
+    if (strncmp(p, "if", 2) == 0 && !is_alnum(p[2])) {
+      Token *token = malloc(sizeof(Token));
+      token->ty = TK_IF;
+      token->input = p;
+      p += 2;
       vec_push(tokens, token);
       continue;
     }

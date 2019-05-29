@@ -81,3 +81,5 @@ void *map_get(Map *map, char *key);
 
 extern int pos;
 extern char *user_input;
+
+char *strndup(const char *s, size_t n);

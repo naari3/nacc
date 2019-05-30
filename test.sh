@@ -75,4 +75,7 @@ try 1 'if (1) return 1;else return 0;'
 try 0 'if (0) return 1;else return 0;'
 try 0 'a = 1;if (a - 1) 1;else return 0;'
 
+try 5 'a=0;while (a < 5) a = a + 1;a;'
+try 0 'a=10;while (a) a = a - 2;a;'
+
 echo OK

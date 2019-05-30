@@ -2,6 +2,7 @@
 
 int label_end_id = 0;
 int label_else_id = 0;
+int label_while_id = 0;
 
 void gen_lval(Node *node) {
   if (node->ty != ND_IDENT) error("代入の左辺値が変数ではありません");
@@ -52,6 +53,20 @@ void gen(Node *node) {
       gen(node->rhs);
       printf(".Lend%d:\n", label_end_id);
     }
+    label_end_id++;
+    return;
+  }
+
+  if (node->ty == ND_WHILE) {
+    printf(".Lbegin%d:\n", label_while_id);
+    gen(node->lhs);
+    printf("  pop rax\n");
+    printf("  cmp rax, 0\n");
+    printf("  je  .Lend%d\n", label_end_id);
+    gen(node->rhs);
+    printf("  jmp .Lbegin%d\n", label_while_id);
+    printf(".Lend%d:\n", label_end_id);
+    label_while_id++;
     label_end_id++;
     return;
   }

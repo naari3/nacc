@@ -42,7 +42,7 @@ enum {
   ND_RETURN,     // returnノード
   ND_IF,         // ifノード
   ND_ELSE,       // elseノード
-  ND_WHILE,      // whileトークン
+  ND_WHILE,      // whileノード
   ND_IDENT,      // 識別子ノード
 };
 
@@ -52,6 +52,7 @@ typedef struct Node {
   struct Node *rhs;  // 右辺
   int val;           // tyがND_NUMの場合のみ使う
   char *name;        // tyがND_IDENTの場合のみ使う
+  int id;            // nodeのid
 } Node;
 
 void parse(char *codestr);
@@ -66,6 +67,7 @@ typedef struct {
   int val;      // tyがTK_NUMの場合、その数値
   char *name;   // tyがTK_IDENTの場合、その名前
   char *input;  // トークン文字列（エラーメッセージ用）
+  int id;       // tokenのid
 } Token;
 
 void tokenize(char *p);

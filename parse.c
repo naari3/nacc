@@ -1,6 +1,9 @@
 #include "nacc.h"
 
 int pos;
+int if_counter = 0;
+int else_counter = 0;
+int while_counter = 0;
 Node *code[100];
 
 // エラーを報告するための関数
@@ -105,6 +108,7 @@ Node *stmt() {
   } else if (consume(TK_IF)) {
     node = malloc(sizeof(Node));
     node->ty = ND_IF;
+    node->id = ((Token *)tokens->data[pos - 1])->id;
     if (consume('(')) {
       node->lhs = expr();
       if (!consume(')'))
@@ -114,6 +118,7 @@ Node *stmt() {
       if (consume(TK_ELSE)) {
         Node *elseNode = malloc(sizeof(Node));
         elseNode->ty = ND_ELSE;
+        elseNode->id = ((Token *)tokens->data[pos - 1])->id;
         elseNode->lhs = then;
         elseNode->rhs = stmt();
         node->rhs = elseNode;
@@ -128,6 +133,7 @@ Node *stmt() {
   } else if (consume(TK_WHILE)) {
     node = malloc(sizeof(Node));
     node->ty = ND_WHILE;
+    node->id = ((Token *)tokens->data[pos - 1])->id;
     if (consume('(')) {
       node->lhs = expr();
       if (!consume(')'))
@@ -274,6 +280,7 @@ void tokenize(char *p) {
       Token *token = malloc(sizeof(Token));
       token->ty = TK_IF;
       token->input = p;
+      token->id = if_counter++;
       p += 2;
       vec_push(tokens, token);
       continue;
@@ -283,6 +290,7 @@ void tokenize(char *p) {
       Token *token = malloc(sizeof(Token));
       token->ty = TK_ELSE;
       token->input = p;
+      token->id = else_counter++;
       p += 4;
       vec_push(tokens, token);
       continue;
@@ -292,6 +300,7 @@ void tokenize(char *p) {
       Token *token = malloc(sizeof(Token));
       token->ty = TK_WHILE;
       token->input = p;
+      token->id = while_counter++;
       p += 5;
       vec_push(tokens, token);
       continue;

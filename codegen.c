@@ -39,7 +39,7 @@ void gen(Node *node) {
     if (node->rhs->ty == ND_ELSE) {
       printf("  je  .Lelse%d\n", node->rhs->id);
       gen(node->rhs->lhs);
-      printf("  je  .LendIf%d\n", node->id);
+      printf("  jmp  .LendIf%d\n", node->id);
       printf(".Lelse%d:\n", node->rhs->id);
       gen(node->rhs->rhs);
       printf(".LendIf%d:\n", node->id);

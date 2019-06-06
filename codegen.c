@@ -63,6 +63,18 @@ void gen(Node *node) {
     return;
   }
 
+  if (node->ty == ND_FOR) {
+    //   Aをコンパイルしたコード
+    printf(".LbeginFor%d:\n", node->id);
+    //   Bをコンパイルしたコード
+    // printf("  pop rax\n");
+    // printf("  cmp rax, 0\n");
+    // printf("  je  .LendFor%d\n", node->id);
+    gen(node->rhs); // body
+    //   Cをコンパイルしたコード
+    printf("  jmp .LbeginFor%d\n", node->id);
+    printf(".LendFor%d:\n", node->id);
+
     return;
   }
 

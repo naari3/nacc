@@ -30,6 +30,7 @@ enum {
   TK_IF,         // ifトークン
   TK_ELSE,       // elseトークン
   TK_WHILE,      // whileトークン
+  TK_FOR,        // forトークン
   TK_IDENT,      // 識別子トークン
 };
 
@@ -43,6 +44,7 @@ enum {
   ND_IF,         // ifノード
   ND_ELSE,       // elseノード
   ND_WHILE,      // whileノード
+  ND_FOR,        // forノード
   ND_IDENT,      // 識別子ノード
 };
 

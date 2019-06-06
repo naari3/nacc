@@ -4,6 +4,7 @@ int pos;
 int if_counter = 0;
 int else_counter = 0;
 int while_counter = 0;
+int for_counter = 0;
 Node *code[100];
 
 // エラーを報告するための関数
@@ -63,6 +64,7 @@ int consume(int ty) {
 // stmt       = expr ";"
 //            | "if" "(" expr ")" stmt ("else" stmt)?
 //            | "while" "(" expr ")" stmt
+//            | "for" "(" expr? ";" expr? ";" expr? ")" stmt
 //            | "return" expr ";"
 // expr       = assign
 // assign     = equality ("=" assign)?
@@ -136,6 +138,26 @@ Node *stmt() {
     node->id = ((Token *)tokens->data[pos - 1])->id;
     if (consume('(')) {
       node->lhs = expr();
+      if (!consume(')'))
+        error_at(((Token *)tokens->data[pos])->input,
+                 "開きカッコに対応する閉じカッコがありません");
+      node->rhs = stmt();
+
+      return node;
+    } else {
+      error_at(((Token *)tokens->data[pos])->input, "条件のカッコがありません");
+    }
+  } else if (consume(TK_FOR)) {
+    node = malloc(sizeof(Node));
+    node->ty = ND_FOR;
+    node->id = ((Token *)tokens->data[pos - 1])->id;
+    if (consume('(')) {
+      if (!consume(';'))
+        error_at(((Token *)tokens->data[pos])->input,
+                 "';'ではないトークンです");
+      if (!consume(';'))
+        error_at(((Token *)tokens->data[pos])->input,
+                 "';'ではないトークンです");
       if (!consume(')'))
         error_at(((Token *)tokens->data[pos])->input,
                  "開きカッコに対応する閉じカッコがありません");
@@ -302,6 +324,16 @@ void tokenize(char *p) {
       token->input = p;
       token->id = while_counter++;
       p += 5;
+      vec_push(tokens, token);
+      continue;
+    }
+
+    if (strncmp(p, "for", 3) == 0 && !is_alnum(p[3])) {
+      Token *token = malloc(sizeof(Token));
+      token->ty = TK_FOR;
+      token->input = p;
+      token->id = for_counter++;
+      p += 3;
       vec_push(tokens, token);
       continue;
     }

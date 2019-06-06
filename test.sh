@@ -79,4 +79,6 @@ try 2 'a = 0;if (a < 2) a = a + 1;else return a;if (a < 2) a = a + 1;else return
 try 5 'a=0;while (a < 5) a = a + 1;a;'
 try 0 'a=10;while (a) a = a - 2;a;'
 
+try 5 'a=0;for (;;) if (a<5) a = a + 1; else return a;'
+
 echo OK

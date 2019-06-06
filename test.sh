@@ -81,5 +81,6 @@ try 0 'a=10;while (a) a = a - 2;a;'
 
 try 5 'a=0;for (;;) if (a<5) a = a + 1; else return a;'
 try 5 'for (a=0;;) if (a<5) a = a + 1; else return a;'
+try 5 'for (a=0;a < 5;) a = a + 1; return a;'
 
 echo OK

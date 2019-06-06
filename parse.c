@@ -159,6 +159,11 @@ Node *stmt() {
     condNode->lhs = NULL;
     condNode->rhs = NULL;
     condNode->ty = ND_FOR_COND;
+    Node *iterNode = malloc(sizeof(Node));
+    iterNode->lhs = NULL;
+    iterNode->rhs = NULL;
+    iterNode->ty = ND_FOR_ITER;
+    condNode->rhs = iterNode;
     initNode->rhs = condNode;
     node->lhs = initNode;
     if (consume('(')) {
@@ -174,9 +179,12 @@ Node *stmt() {
           error_at(((Token *)tokens->data[pos])->input,
                    "';'ではないトークンです");
       }
-      if (!consume(')'))
-        error_at(((Token *)tokens->data[pos])->input,
-                 "開きカッコに対応する閉じカッコがありません");
+      if (!consume(')')) {
+        iterNode->lhs = expr();
+        if (!consume(')'))
+          error_at(((Token *)tokens->data[pos])->input,
+                   "開きカッコに対応する閉じカッコがありません");
+      }
       node->rhs = stmt();
 
       return node;

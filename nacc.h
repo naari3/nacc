@@ -47,6 +47,7 @@ enum {
   ND_FOR,        // forノード
   ND_FOR_INIT,   // forの初期化式ノード
   ND_FOR_COND,   // forの条件式ノード
+  ND_FOR_ITER,   // forの増減処理ノード
   ND_IDENT,      // 識別子ノード
 };
 

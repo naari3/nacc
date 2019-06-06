@@ -77,7 +77,9 @@ void gen(Node *node) {
     printf("  cmp rax, 0\n");
     printf("  je  .LendFor%d\n", node->id);
     gen(node->rhs);  // body
-    //   Cをコンパイルしたコード
+    if (node->lhs->rhs->rhs->lhs) {
+      gen(node->lhs->rhs->rhs->lhs);  // iter
+    }
     printf("  jmp .LbeginFor%d\n", node->id);
     printf(".LendFor%d:\n", node->id);
 

@@ -64,13 +64,15 @@ void gen(Node *node) {
   }
 
   if (node->ty == ND_FOR) {
-    //   Aをコンパイルしたコード
+    if (node->lhs->lhs) {
+      gen(node->lhs->lhs);  // init
+    }
     printf(".LbeginFor%d:\n", node->id);
     //   Bをコンパイルしたコード
     // printf("  pop rax\n");
     // printf("  cmp rax, 0\n");
     // printf("  je  .LendFor%d\n", node->id);
-    gen(node->rhs); // body
+    gen(node->rhs);  // body
     //   Cをコンパイルしたコード
     printf("  jmp .LbeginFor%d\n", node->id);
     printf(".LendFor%d:\n", node->id);

@@ -45,6 +45,7 @@ enum {
   ND_ELSE,       // elseノード
   ND_WHILE,      // whileノード
   ND_FOR,        // forノード
+  ND_FOR_INIT,   // forの初期化式ノード
   ND_IDENT,      // 識別子ノード
 };
 

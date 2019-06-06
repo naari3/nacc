@@ -151,10 +151,18 @@ Node *stmt() {
     node = malloc(sizeof(Node));
     node->ty = ND_FOR;
     node->id = ((Token *)tokens->data[pos - 1])->id;
+    Node *initNode = malloc(sizeof(Node));
+    initNode->lhs = NULL;
+    initNode->rhs = NULL;
+    initNode->ty = ND_FOR_INIT;
+    node->lhs = initNode;
     if (consume('(')) {
-      if (!consume(';'))
-        error_at(((Token *)tokens->data[pos])->input,
-                 "';'ではないトークンです");
+      if (!consume(';')) {
+        initNode->lhs = expr();
+        if (!consume(';'))
+          error_at(((Token *)tokens->data[pos])->input,
+                   "';'ではないトークンです");
+      }
       if (!consume(';'))
         error_at(((Token *)tokens->data[pos])->input,
                  "';'ではないトークンです");

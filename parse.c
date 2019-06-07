@@ -62,6 +62,7 @@ int consume(int ty) {
 
 // program    = stmt*
 // stmt       = expr ";"
+//            | { stmt* }
 //            | "if" "(" expr ")" stmt ("else" stmt)?
 //            | "while" "(" expr ")" stmt
 //            | "for" "(" expr? ";" expr? ";" expr? ")" stmt
@@ -191,6 +192,21 @@ Node *stmt() {
     } else {
       error_at(((Token *)tokens->data[pos])->input, "条件のカッコがありません");
     }
+  } else if (consume('{')) {
+    node = malloc(sizeof(Node));
+    node->ty = ND_BLOCK;
+
+    Vector *stmts = new_vector();
+    while (!consume('}')) {
+      if (consume(TK_EOF)) {
+        error_at(((Token *)tokens->data[pos])->input,
+                 "ブロックの開きカッコに対応する閉じカッコがありません");
+      }
+      vec_push(stmts, (void *)stmt());
+    }
+
+    node->stmts = stmts;
+    return node;
   } else {
     node = expr();
   }
@@ -399,7 +415,8 @@ void tokenize(char *p) {
         strncmp(p, "+", 1) == 0 || strncmp(p, "-", 1) == 0 ||
         strncmp(p, "*", 1) == 0 || strncmp(p, "/", 1) == 0 ||
         strncmp(p, "(", 1) == 0 || strncmp(p, ")", 1) == 0 ||
-        strncmp(p, ";", 1) == 0 || strncmp(p, "=", 1) == 0) {
+        strncmp(p, ";", 1) == 0 || strncmp(p, "=", 1) == 0 ||
+        strncmp(p, "{", 1) == 0 || strncmp(p, "}", 1) == 0) {
       Token *token = malloc(sizeof(Token));
       token->ty = *p;
       token->input = p;

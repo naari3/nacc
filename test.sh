@@ -84,4 +84,10 @@ try 5 'for (a=0;;) if (a<5) a = a + 1; else return a;'
 try 5 'for (a=0;a < 5;) a = a + 1; return a;'
 try 5 'for (a=0;a < 5;a=a+1) 0; return a;'
 
+try 1 '{ return 1; }'
+try 2 '{ 1; { return 2; } }'
+try 3 '{ { { return 3; } } }'
+try 4 'a = 0; b = 0; if (1) { a = 0; b = 4; } return b;'
+try 5 'a = 0; for (i = 0; i<10; i=i+1) { { { { { { i=i+1; a=a+1; } } } } } } return a;'
+
 echo OK

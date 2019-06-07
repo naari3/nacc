@@ -18,54 +18,6 @@ typedef struct {
 
 Int *new_int(int i);
 
-// トークンの型を表す値
-enum {
-  TK_NUM = 256,  // 整数トークン
-  TK_EQ,         // ==トークン
-  TK_NE,         // !=トークン
-  TK_LE,         // <=トークン
-  TK_GE,         // >=トークン
-  TK_EOF,        // 入力の終わりを表すトークン
-  TK_RETURN,     // returnトークン
-  TK_IF,         // ifトークン
-  TK_ELSE,       // elseトークン
-  TK_WHILE,      // whileトークン
-  TK_FOR,        // forトークン
-  TK_IDENT,      // 識別子トークン
-};
-
-enum {
-  ND_NUM = 256,  // 整数ノード
-  ND_EQ,         // ==ノード
-  ND_NE,         // !=ノード
-  ND_LE,         // <=ノード
-  ND_GE,         // >=ノード
-  ND_RETURN,     // returnノード
-  ND_IF,         // ifノード
-  ND_ELSE,       // elseノード
-  ND_WHILE,      // whileノード
-  ND_FOR,        // forノード
-  ND_FOR_INIT,   // forの初期化式ノード
-  ND_FOR_COND,   // forの条件式ノード
-  ND_FOR_ITER,   // forの増減処理ノード
-  ND_IDENT,      // 識別子ノード
-};
-
-typedef struct Node {
-  int ty;            // 演算子かND_NUM
-  struct Node *lhs;  // 左辺
-  struct Node *rhs;  // 右辺
-  int val;           // tyがND_NUMの場合のみ使う
-  char *name;        // tyがND_IDENTの場合のみ使う
-  int id;            // nodeのid
-} Node;
-
-void parse(char *codestr);
-
-void gen(Node *node);
-
-extern Node *code[];
-
 // トークンの型
 typedef struct {
   int ty;       // トークンの型
@@ -99,6 +51,56 @@ Map *new_map();
 void map_put(Map *map, char *key, void *val);
 void *map_get(Map *map, char *key);
 extern Map *vars;
+
+// トークンの型を表す値
+enum {
+  TK_NUM = 256,  // 整数トークン
+  TK_EQ,         // ==トークン
+  TK_NE,         // !=トークン
+  TK_LE,         // <=トークン
+  TK_GE,         // >=トークン
+  TK_EOF,        // 入力の終わりを表すトークン
+  TK_RETURN,     // returnトークン
+  TK_IF,         // ifトークン
+  TK_ELSE,       // elseトークン
+  TK_WHILE,      // whileトークン
+  TK_FOR,        // forトークン
+  TK_IDENT,      // 識別子トークン
+};
+
+enum {
+  ND_NUM = 256,  // 整数ノード
+  ND_EQ,         // ==ノード
+  ND_NE,         // !=ノード
+  ND_LE,         // <=ノード
+  ND_GE,         // >=ノード
+  ND_RETURN,     // returnノード
+  ND_IF,         // ifノード
+  ND_ELSE,       // elseノード
+  ND_WHILE,      // whileノード
+  ND_FOR,        // forノード
+  ND_FOR_INIT,   // forの初期化式ノード
+  ND_FOR_COND,   // forの条件式ノード
+  ND_FOR_ITER,   // forの増減処理ノード
+  ND_IDENT,      // 識別子ノード
+  ND_BLOCK,      // ブロックノード
+};
+
+typedef struct Node {
+  int ty;            // 演算子かND_NUM
+  struct Node *lhs;  // 左辺
+  struct Node *rhs;  // 右辺
+  int val;           // tyがND_NUMの場合のみ使う
+  char *name;        // tyがND_IDENTの場合のみ使う
+  int id;            // nodeのid
+  Vector *stmts;     // ブロック用のstmtのベクタ
+} Node;
+
+void parse(char *codestr);
+
+void gen(Node *node);
+
+extern Node *code[];
 
 extern int pos;
 extern char *user_input;

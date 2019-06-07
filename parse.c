@@ -48,6 +48,13 @@ Node *new_node_ident(char *name) {
   return node;
 }
 
+Node *new_node_call(char *name) {
+  Node *node = malloc(sizeof(Node));
+  node->ty = ND_CALL;
+  node->name = name;
+  return node;
+}
+
 Int *new_int(int i) {
   Int *in = malloc(sizeof(Int));
   in->num = i;
@@ -74,7 +81,9 @@ int consume(int ty) {
 // add        = mul ("+" mul | "-" mul)*
 // mul        = unary ("*" unary | "/" unary)*
 // unary      = ("+" | "-")? term
-// term       = num | ident | "(" expr ")"
+// term       = num |
+//            | ident ("(" ")")?
+//            | "(" expr ")"
 
 void program();
 Node *stmt();
@@ -304,6 +313,14 @@ Node *term() {
     return new_node_num(((Token *)tokens->data[pos++])->val);
 
   if (((Token *)tokens->data[pos])->ty == TK_IDENT) {
+    if (((Token *)tokens->data[pos + 1])->ty == '(') {  // call
+      if (((Token *)tokens->data[pos + 2])->ty != ')')
+        error_at(((Token *)tokens->data[pos + 2])->input,
+                 "開きカッコに対応する閉じカッコがありません");
+      int callpos = pos;
+      pos = pos + 3;
+      return new_node_call(((Token *)tokens->data[callpos])->name);
+    }
     map_put(vars, ((Token *)tokens->data[pos])->name,
             new_int(8 * (vars->keys->len + 1)));
     return new_node_ident(((Token *)tokens->data[pos++])->name);

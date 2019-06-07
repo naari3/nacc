@@ -84,6 +84,7 @@ enum {
   ND_FOR_ITER,   // forの増減処理ノード
   ND_IDENT,      // 識別子ノード
   ND_BLOCK,      // ブロックノード
+  ND_CALL,       // 関数呼び出しノード
 };
 
 typedef struct Node {

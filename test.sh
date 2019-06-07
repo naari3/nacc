@@ -90,4 +90,9 @@ try 3 '{ { { return 3; } } }'
 try 4 'a = 0; b = 0; if (1) { a = 0; b = 4; } return b;'
 try 5 'a = 0; for (i = 0; i<10; i=i+1) { { { { { { i=i+1; a=a+1; } } } } } } return a;'
 
+gcc -c -o testcall.o testcall/testcall.c
+./nacc "testcall();" > tmp.s
+gcc -o tmp tmp.s testcall.o
+./tmp
+
 echo OK

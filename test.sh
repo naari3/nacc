@@ -1,10 +1,15 @@
 #!/bin/bash
+
+echo 'int hoge() { return 42; }' | gcc -xc -c -o tmp_hoge.o -
+echo 'int add(int a, int b) { return a + b; }' | gcc -xc -c -o tmp_add.o -
+echo 'int add6(int a, int b, int c, int d, int e, int f) { return a + b + c + d + e + f; }' | gcc -xc -c -o tmp_add6.o -
+
 try() {
   expected="$1"
   input="$2"
 
   ./nacc "$input" > tmp.s
-  gcc -o tmp tmp.s
+  gcc -o tmp tmp.s tmp_hoge.o tmp_add.o tmp_add6.o
   ./tmp
   actual="$?"
 
@@ -90,9 +95,10 @@ try 3 '{ { { return 3; } } }'
 try 4 'a = 0; b = 0; if (1) { a = 0; b = 4; } return b;'
 try 5 'a = 0; for (i = 0; i<10; i=i+1) { { { { { { i=i+1; a=a+1; } } } } } } return a;'
 
-gcc -c -o testcall.o testcall/testcall.c
-./nacc "testcall();" > tmp.s
-gcc -o tmp tmp.s testcall.o
-./tmp
+try 42 'hoge();'
+
+try 42 'add(20, 22);'
+try 42 'add6(4, 2, 10, 15, 3, 8);'
+try 3 'add(1, add(1, 1));'
 
 echo OK

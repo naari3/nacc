@@ -48,10 +48,11 @@ Node *new_node_ident(char *name) {
   return node;
 }
 
-Node *new_node_call(char *name) {
+Node *new_node_call(char *name, Vector *params) {
   Node *node = malloc(sizeof(Node));
   node->ty = ND_CALL;
   node->name = name;
+  node->params = params;
   return node;
 }
 
@@ -313,17 +314,25 @@ Node *term() {
     return new_node_num(((Token *)tokens->data[pos++])->val);
 
   if (((Token *)tokens->data[pos])->ty == TK_IDENT) {
-    if (((Token *)tokens->data[pos + 1])->ty == '(') {  // call
-      if (((Token *)tokens->data[pos + 2])->ty != ')')
-        error_at(((Token *)tokens->data[pos + 2])->input,
-                 "開きカッコに対応する閉じカッコがありません");
-      int callpos = pos;
-      pos = pos + 3;
-      return new_node_call(((Token *)tokens->data[callpos])->name);
+    Vector *params = new_vector();
+    char *name = ((Token *)tokens->data[pos++])->name;
+    if (consume('(')) {  // call
+      for (int i = 0; i < 6; i++) {
+        if (consume(')')) {
+          return new_node_call(name, params);
+        } else {
+          vec_push(params, expr());
+          if (consume(')')) {
+            return new_node_call(name, params);
+          }
+        }
+        if (!consume(',')) {
+          error_at(((Token *)tokens->data[pos])->input, "コンマではありません");
+        }
+      }
     }
-    map_put(vars, ((Token *)tokens->data[pos])->name,
-            new_int(8 * (vars->keys->len + 1)));
-    return new_node_ident(((Token *)tokens->data[pos++])->name);
+    map_put(vars, name, new_int(8 * (vars->keys->len + 1)));
+    return new_node_ident(name);
   }
 
   error_at(((Token *)tokens->data[pos])->input,
@@ -435,7 +444,8 @@ void tokenize(char *p) {
         strncmp(p, "*", 1) == 0 || strncmp(p, "/", 1) == 0 ||
         strncmp(p, "(", 1) == 0 || strncmp(p, ")", 1) == 0 ||
         strncmp(p, ";", 1) == 0 || strncmp(p, "=", 1) == 0 ||
-        strncmp(p, "{", 1) == 0 || strncmp(p, "}", 1) == 0) {
+        strncmp(p, "{", 1) == 0 || strncmp(p, "}", 1) == 0 ||
+        strncmp(p, ",", 1) == 0) {
       Token *token = malloc(sizeof(Token));
       token->ty = *p;
       token->input = p;

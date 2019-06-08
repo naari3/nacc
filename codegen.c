@@ -95,6 +95,12 @@ void gen(Node *node) {
   }
 
   if (node->ty == ND_CALL) {
+    char *registers[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+    for (int i = 0; i < node->params->len; i++) {
+      gen(((Node *)((Vector *)node->params)->data[i]));
+      printf("  pop rax\n");
+      printf("  mov %s, rax\n", registers[i]);
+    }
     printf("  call %s\n", node->name);
     printf("  push rax\n");
 

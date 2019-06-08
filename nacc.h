@@ -95,6 +95,7 @@ typedef struct Node {
   char *name;        // tyがND_IDENTの場合のみ使う
   int id;            // nodeのid
   Vector *stmts;     // ブロック用のstmtのベクタ
+  Vector *params;    // 関数呼び出し時の引数用のstmtのベクタ
 } Node;
 
 void parse(char *codestr);

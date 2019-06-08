@@ -330,10 +330,12 @@ Node *term() {
            "数値でも開きカッコでもないトークンです");
 }
 
-int is_al(char c) { return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z'); }
+int is_al(char c) {
+  return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || (c == '_');
+}
 
 int is_alnum(char c) {
-  return is_al(c) || ('0' <= c && c <= '9') || (c == '_');
+  return is_al(c) || ('0' <= c && c <= '9');
 }
 
 // user_inputが指している文字列を
@@ -397,7 +399,7 @@ void tokenize(char *p) {
 
     if (is_al(*p)) {
       int token_len = 1;
-      while (is_al(p[token_len])) {
+      while (is_alnum(p[token_len])) {
         token_len++;
       }
       Token *token = malloc(sizeof(Token));

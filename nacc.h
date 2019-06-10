@@ -85,6 +85,7 @@ enum {
   ND_IDENT,      // 識別子ノード
   ND_BLOCK,      // ブロックノード
   ND_CALL,       // 関数呼び出しノード
+  ND_FUNC,       // 関数ノード
 };
 
 typedef struct Node {
@@ -103,6 +104,7 @@ void parse(char *codestr);
 void gen(Node *node);
 
 extern Node *code[];
+extern Node *functions[];
 
 extern int pos;
 extern char *user_input;

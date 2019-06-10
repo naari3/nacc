@@ -76,7 +76,8 @@ int consume(int ty) {
   return 0;
 }
 
-// program    = stmt*
+// program    = func*
+// func       = ident "("  ")" { stmt* }
 // stmt       = expr ";"
 //            | { stmt* }
 //            | "if" "(" expr ")" stmt ("else" stmt)?
@@ -95,6 +96,7 @@ int consume(int ty) {
 //            | "(" expr ")"
 
 void program();
+Node *func();
 Node *stmt();
 Node *expr();
 Node *assign();
@@ -110,13 +112,42 @@ void parse(char *codestr) {
   tokenize(codestr);
   vars = new_map();
   pos = 0;
-  program();
+  return program();
 };
 
 void program() {
   int i = 0;
-  while (!expect_token(TK_EOF)) code[i++] = stmt();
+  while (!expect_token(TK_EOF)) code[i++] = func();
   code[i] = NULL;
+}
+
+Node *func() {
+  Node *node = malloc(sizeof(Node));
+  node->ty = ND_FUNC;
+
+  if (!expect_token(TK_IDENT))
+    error_at(((Token *)tokens->data[pos])->input, "関数名がありません");
+  node->name = ((Token *)tokens->data[pos++])->name;
+
+  Vector *params = new_vector();
+  if (!consume('('))
+    error_at(((Token *)tokens->data[pos])->input, "引数定義が存在しません");
+  while (!consume(')')) {
+    vec_push(params, term());
+    if (!consume(',')) {
+      error_at(((Token *)tokens->data[pos])->input, "コンマではありません");
+    }
+  }
+  node->params = params;
+
+  Vector *stmts = new_vector();
+  consume('{');
+  while (!consume('}')) {
+    vec_push(stmts, (void *)stmt());
+  }
+  node->stmts = stmts;
+
+  return node;
 }
 
 Node *stmt() {
@@ -351,9 +382,7 @@ int is_al(char c) {
   return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || (c == '_');
 }
 
-int is_alnum(char c) {
-  return is_al(c) || ('0' <= c && c <= '9');
-}
+int is_alnum(char c) { return is_al(c) || ('0' <= c && c <= '9'); }
 
 // user_inputが指している文字列を
 // トークンに分割してtokensに保存する

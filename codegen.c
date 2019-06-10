@@ -9,7 +9,39 @@ void gen_lval(Node *node) {
   printf("  push rax\n");
 }
 
+// プロローグ
+// 変数分の領域を確保する
+void gen_prologue() {
+  printf("  push rbp\n");
+  printf("  mov rbp, rsp\n");
+  printf("  sub rsp, %d\n", vars->keys->len * 8);
+}
+
+// エピローグ
+// 最後の式の結果がRAXに残っているのでそれが返り値になる
+void gen_epirogue() {
+  printf("  mov rsp, rbp\n");
+  printf("  pop rbp\n");
+  printf("  ret\n");
+}
+
 void gen(Node *node) {
+  if (node->ty == ND_FUNC) {
+    printf("%s:\n", node->name);
+    gen_prologue();
+    for (int i = 0; i < ((Vector *)node->stmts)->len; i++) {
+      // 抽象構文木を下りながらコード生成
+      gen(((Node *)((Vector *)node->stmts)->data[i]));
+
+      // 式の評価結果としてスタックに一つの値が残っている
+      // はずなので、スタックが溢れないようにポップしておく
+      printf("  pop rax\n");
+    }
+    gen_epirogue();
+
+    return;
+  }
+
   if (node->ty == ND_RETURN) {
     gen(node->lhs);
     printf("  pop rax\n");

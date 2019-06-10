@@ -63,10 +63,17 @@ Int *new_int(int i) {
   return in;
 }
 
-int consume(int ty) {
+int expect_token(int ty) {
   if (((Token *)tokens->data[pos])->ty != ty) return 0;
-  pos++;
   return 1;
+}
+
+int consume(int ty) {
+  if (expect_token(ty)) {
+    pos++;
+    return 1;
+  }
+  return 0;
 }
 
 // program    = stmt*
@@ -108,7 +115,7 @@ void parse(char *codestr) {
 
 void program() {
   int i = 0;
-  while (((Token *)tokens->data[pos])->ty != TK_EOF) code[i++] = stmt();
+  while (!expect_token(TK_EOF)) code[i++] = stmt();
   code[i] = NULL;
 }
 

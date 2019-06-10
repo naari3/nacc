@@ -1,6 +1,7 @@
 #include "nacc.h"
 
 int pos;
+Vector *tokens;
 int if_counter = 0;
 int else_counter = 0;
 int while_counter = 0;

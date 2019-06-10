@@ -36,7 +36,7 @@ typedef struct {
 } Vector;
 
 // トークナイズした結果のトークン列はここに保存される
-Vector *tokens;
+extern Vector *tokens;
 
 Vector *new_vector();
 void vec_push(Vector *vec, void *elem);

@@ -79,6 +79,7 @@ void gen(Node *node) {
       printf("  je  .LendIf%d\n", node->id);
       gen(node->rhs);
       printf(".LendIf%d:\n", node->id);
+      printf("  push %d\n", 0);
     }
     return;
   }

@@ -9,12 +9,19 @@ void gen_lval(Node *node) {
   printf("  push rax\n");
 }
 
+char *registers[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+
 // プロローグ
 // 変数分の領域を確保する
-void gen_prologue() {
+void gen_prologue(Vector *args) {
   printf("  push rbp\n");
   printf("  mov rbp, rsp\n");
   printf("  sub rsp, %d\n", vars->keys->len * 8);
+  for (int i = 0; i < args->len; i++) {
+    gen_lval(args->data[i]);
+    printf("  pop rax\n");
+    printf("  mov [rax], %s\n", registers[i]);
+  }
 }
 
 // エピローグ
@@ -25,10 +32,16 @@ void gen_epirogue() {
   printf("  ret\n");
 }
 
+void gen_args(Vector *args) {
+  for (int i = 0; i < args->len; i++) {
+    printf("  mov rax, %s\n", registers[i]);
+  }
+}
+
 void gen(Node *node) {
   if (node->ty == ND_FUNC) {
     printf("%s:\n", node->name);
-    gen_prologue();
+    gen_prologue(node->params);
     for (int i = 0; i < ((Vector *)node->stmts)->len; i++) {
       // 抽象構文木を下りながらコード生成
       gen(((Node *)((Vector *)node->stmts)->data[i]));
@@ -128,7 +141,6 @@ void gen(Node *node) {
   }
 
   if (node->ty == ND_CALL) {
-    char *registers[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
     for (int i = 0; i < node->params->len; i++) {
       gen(((Node *)((Vector *)node->params)->data[i]));
       printf("  pop rax\n");

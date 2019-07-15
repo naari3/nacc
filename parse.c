@@ -134,6 +134,7 @@ Node *func() {
     error_at(((Token *)tokens->data[pos])->input, "引数定義が存在しません");
   while (!consume(')')) {
     vec_push(params, term());
+    if (consume(')')) break;
     if (!consume(',')) {
       error_at(((Token *)tokens->data[pos])->input, "コンマではありません");
     }

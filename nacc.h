@@ -97,6 +97,7 @@ typedef struct Node {
   int id;            // nodeのid
   Vector *stmts;     // ブロック用のstmtのベクタ
   Vector *params;    // 関数呼び出し時の引数用のstmtのベクタ
+  Map *vars;         // 変数が入る
 } Node;
 
 void parse(char *codestr);

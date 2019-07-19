@@ -18,9 +18,25 @@ typedef struct {
 
 Int *new_int(int i);
 
+// トークンの型を表す値
+typedef enum {
+  TK_NUM = 256,  // 整数トークン
+  TK_EQ,         // ==トークン
+  TK_NE,         // !=トークン
+  TK_LE,         // <=トークン
+  TK_GE,         // >=トークン
+  TK_EOF,        // 入力の終わりを表すトークン
+  TK_RETURN,     // returnトークン
+  TK_IF,         // ifトークン
+  TK_ELSE,       // elseトークン
+  TK_WHILE,      // whileトークン
+  TK_FOR,        // forトークン
+  TK_IDENT,      // 識別子トークン
+} TokenKind;
+
 // トークンの型
 typedef struct {
-  int ty;       // トークンの型
+  TokenKind kind;  // トークンの型
   int val;      // tyがTK_NUMの場合、その数値
   char *name;   // tyがTK_IDENTの場合、その名前
   char *input;  // トークン文字列（エラーメッセージ用）
@@ -51,22 +67,6 @@ Map *new_map();
 void map_put(Map *map, char *key, void *val);
 void *map_get(Map *map, char *key);
 extern Map *vars;
-
-// トークンの型を表す値
-enum {
-  TK_NUM = 256,  // 整数トークン
-  TK_EQ,         // ==トークン
-  TK_NE,         // !=トークン
-  TK_LE,         // <=トークン
-  TK_GE,         // >=トークン
-  TK_EOF,        // 入力の終わりを表すトークン
-  TK_RETURN,     // returnトークン
-  TK_IF,         // ifトークン
-  TK_ELSE,       // elseトークン
-  TK_WHILE,      // whileトークン
-  TK_FOR,        // forトークン
-  TK_IDENT,      // 識別子トークン
-};
 
 enum {
   ND_NUM = 256,  // 整数ノード

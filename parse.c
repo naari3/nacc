@@ -63,8 +63,8 @@ Int *new_int(int i) {
   return in;
 }
 
-int expect_token(int ty) {
-  if (((Token *)tokens->data[pos])->ty != ty) return 0;
+int expect_token(int kind) {
+  if (((Token *)tokens->data[pos])->kind != kind) return 0;
   return 1;
 }
 
@@ -357,10 +357,10 @@ Node *term() {
   }
 
   // そうでなければ数値のはず
-  if (((Token *)tokens->data[pos])->ty == TK_NUM)
+  if (((Token *)tokens->data[pos])->kind == TK_NUM)
     return new_node_num(((Token *)tokens->data[pos++])->val);
 
-  if (((Token *)tokens->data[pos])->ty == TK_IDENT) {
+  if (((Token *)tokens->data[pos])->kind == TK_IDENT) {
     Vector *params = new_vector();
     char *name = ((Token *)tokens->data[pos++])->name;
     if (consume('(')) {  // call
@@ -404,7 +404,7 @@ void tokenize(char *p) {
 
     if (strncmp(p, "return", 6) == 0 && !is_alnum(p[6])) {
       Token *token = malloc(sizeof(Token));
-      token->ty = TK_RETURN;
+      token->kind = TK_RETURN;
       token->input = p;
       p += 6;
       vec_push(tokens, token);
@@ -413,7 +413,7 @@ void tokenize(char *p) {
 
     if (strncmp(p, "if", 2) == 0 && !is_alnum(p[2])) {
       Token *token = malloc(sizeof(Token));
-      token->ty = TK_IF;
+      token->kind = TK_IF;
       token->input = p;
       token->id = if_counter++;
       p += 2;
@@ -423,7 +423,7 @@ void tokenize(char *p) {
 
     if (strncmp(p, "else", 4) == 0 && !is_alnum(p[4])) {
       Token *token = malloc(sizeof(Token));
-      token->ty = TK_ELSE;
+      token->kind = TK_ELSE;
       token->input = p;
       token->id = else_counter++;
       p += 4;
@@ -433,7 +433,7 @@ void tokenize(char *p) {
 
     if (strncmp(p, "while", 5) == 0 && !is_alnum(p[5])) {
       Token *token = malloc(sizeof(Token));
-      token->ty = TK_WHILE;
+      token->kind = TK_WHILE;
       token->input = p;
       token->id = while_counter++;
       p += 5;
@@ -443,7 +443,7 @@ void tokenize(char *p) {
 
     if (strncmp(p, "for", 3) == 0 && !is_alnum(p[3])) {
       Token *token = malloc(sizeof(Token));
-      token->ty = TK_FOR;
+      token->kind = TK_FOR;
       token->input = p;
       token->id = for_counter++;
       p += 3;
@@ -457,7 +457,7 @@ void tokenize(char *p) {
         token_len++;
       }
       Token *token = malloc(sizeof(Token));
-      token->ty = TK_IDENT;
+      token->kind = TK_IDENT;
       token->name = strndup(p, token_len);
       token->input = p;
       vec_push(tokens, token);
@@ -469,13 +469,13 @@ void tokenize(char *p) {
         strncmp(p, "<=", 2) == 0 || strncmp(p, ">=", 2) == 0) {
       Token *token = malloc(sizeof(Token));
       if (strncmp(p, "==", 2) == 0) {
-        token->ty = TK_EQ;
+        token->kind = TK_EQ;
       } else if (strncmp(p, "!=", 2) == 0) {
-        token->ty = TK_NE;
+        token->kind = TK_NE;
       } else if (strncmp(p, "<=", 2) == 0) {
-        token->ty = TK_LE;
+        token->kind = TK_LE;
       } else if (strncmp(p, ">=", 2) == 0) {
-        token->ty = TK_GE;
+        token->kind = TK_GE;
       }
       token->input = p;
       p++;
@@ -492,7 +492,7 @@ void tokenize(char *p) {
         strncmp(p, "{", 1) == 0 || strncmp(p, "}", 1) == 0 ||
         strncmp(p, ",", 1) == 0 || strncmp(p, "&", 1) == 0) {
       Token *token = malloc(sizeof(Token));
-      token->ty = *p;
+      token->kind = *p;
       token->input = p;
       p++;
       vec_push(tokens, token);
@@ -501,7 +501,7 @@ void tokenize(char *p) {
 
     if (isdigit(*p)) {
       Token *token = malloc(sizeof(Token));
-      token->ty = TK_NUM;
+      token->kind = TK_NUM;
       token->input = p;
       token->val = strtol(p, &p, 10);
       vec_push(tokens, token);
@@ -512,7 +512,7 @@ void tokenize(char *p) {
   }
 
   Token *token = malloc(sizeof(Token));
-  token->ty = TK_EOF;
+  token->kind = TK_EOF;
   token->input = p;
   vec_push(tokens, token);
 }

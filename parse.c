@@ -90,7 +90,10 @@ int consume(int ty) {
 // relational = add ("<" add | "<=" add | ">" add | ">=" add)*
 // add        = mul ("+" mul | "-" mul)*
 // mul        = unary ("*" unary | "/" unary)*
-// unary      = ("+" | "-")? term
+// unary      = "+"? term
+//            | "-"? term
+//            | "*" unary
+//            | "&" unary
 // term       = num |
 //            | ident ("(" ")")?
 //            | "(" expr ")"
@@ -336,6 +339,10 @@ Node *unary() {
     return term();
   else if (consume('-'))
     return new_node('-', new_node_num(0), term());
+  else if (consume('&'))
+    return new_node(ND_ADDR, unary(), NULL);
+  else if (consume('*'))
+    return new_node(ND_DEREF, unary(), NULL);
   return term();
 }
 
@@ -483,7 +490,7 @@ void tokenize(char *p) {
         strncmp(p, "(", 1) == 0 || strncmp(p, ")", 1) == 0 ||
         strncmp(p, ";", 1) == 0 || strncmp(p, "=", 1) == 0 ||
         strncmp(p, "{", 1) == 0 || strncmp(p, "}", 1) == 0 ||
-        strncmp(p, ",", 1) == 0) {
+        strncmp(p, ",", 1) == 0 || strncmp(p, "&", 1) == 0) {
       Token *token = malloc(sizeof(Token));
       token->ty = *p;
       token->input = p;

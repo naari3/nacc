@@ -105,4 +105,6 @@ try 3 'one () { return 1; } main () { return one() + one() + one(); }'
 try 42 'num (a) { a; } main () { return num(42); }'
 try 55 'fib (n) { if (n == 0) return 0; if (n == 1) return 1; return fib(n - 2) + fib(n - 1);  } main () { return fib(10); }'
 
+try 3 'main() { x = 3; y = &x; return *y; }'
+
 echo OK

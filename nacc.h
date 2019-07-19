@@ -86,6 +86,8 @@ enum {
   ND_BLOCK,      // ブロックノード
   ND_CALL,       // 関数呼び出しノード
   ND_FUNC,       // 関数ノード
+  ND_ADDR,       // & アドレスノード
+  ND_DEREF,      // * 参照ノード
 };
 
 typedef struct Node {

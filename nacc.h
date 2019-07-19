@@ -37,8 +37,8 @@ typedef enum {
 // トークンの型
 typedef struct {
   TokenKind kind;  // トークンの型
-  int val;         // tyがTK_NUMの場合、その数値
-  char *name;      // tyがTK_IDENTの場合、その名前
+  int val;         // kindがTK_NUMの場合、その数値
+  char *name;      // kindがTK_IDENTの場合、その名前
   char *input;     // トークン文字列（エラーメッセージ用）
   int id;          // tokenのid
 } Token;
@@ -101,8 +101,8 @@ typedef struct Node {
   NodeKind kind;     // 演算子かND_NUM
   struct Node *lhs;  // 左辺
   struct Node *rhs;  // 右辺
-  int val;           // tyがND_NUMの場合のみ使う
-  char *name;        // tyがND_IDENTの場合のみ使う
+  int val;           // kindがND_NUMの場合のみ使う
+  char *name;        // kindがND_IDENTの場合のみ使う
   int id;            // nodeのid
   Vector *stmts;     // ブロック用のstmtのベクタ
   Vector *params;    // 関数呼び出し時の引数用のstmtのベクタ

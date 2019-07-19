@@ -7,6 +7,7 @@ int else_counter = 0;
 int while_counter = 0;
 int for_counter = 0;
 Node *code[100];
+Token *token;
 
 // エラーを報告するための関数
 // printfと同じ引数を取る
@@ -392,6 +393,17 @@ int is_al(char c) {
 
 int is_alnum(char c) { return is_al(c) || ('0' <= c && c <= '9'); }
 
+// 新しいトークンを作成してcurに繋げる
+Token *new_token(TokenKind kind, Token *cur, char *str, int length) {
+  Token *tok = calloc(1, sizeof(Token));
+  tok->kind = kind;
+  tok->input = str;
+  tok->len = length;
+
+  cur->next = tok;
+  return tok;
+}
+
 // user_inputが指している文字列を
 // トークンに分割してtokensに保存する
 void tokenize(char *p) {
@@ -515,4 +527,90 @@ void tokenize(char *p) {
   token->kind = TK_EOF;
   token->input = p;
   vec_push(tokens, token);
+}
+
+Token *tokenize2(char *p) {
+  Token head;
+  head.next = NULL;
+  Token *cur = &head;
+
+  while (*p) {
+    // 空白文字をスキップ
+    if (isspace(*p)) {
+      p++;
+      continue;
+    }
+
+    if (strncmp(p, "return", 6) == 0 && !is_alnum(p[6])) {
+      cur = new_token(TK_RETURN, cur, p, 6);
+      p += 6;
+      continue;
+    }
+
+    if (strncmp(p, "if", 2) == 0 && !is_alnum(p[2])) {
+      cur = new_token(TK_IF, cur, p, 2);
+      p += 2;
+      continue;
+    }
+
+    if (strncmp(p, "else", 4) == 0 && !is_alnum(p[4])) {
+      cur = new_token(TK_ELSE, cur, p, 4);
+      p += 4;
+      continue;
+    }
+
+    if (strncmp(p, "while", 5) == 0 && !is_alnum(p[5])) {
+      cur = new_token(TK_WHILE, cur, p, 5);
+      p += 5;
+      continue;
+    }
+
+    if (strncmp(p, "for", 3) == 0 && !is_alnum(p[3])) {
+      cur = new_token(TK_FOR, cur, p, 3);
+      p += 3;
+      continue;
+    }
+
+    if (is_al(*p)) {
+      int token_len = 1;
+      while (is_alnum(p[token_len])) {
+        token_len++;
+      }
+
+      cur = new_token(TK_IDENT, cur, p, p + token_len);
+      p += token_len;
+      continue;
+    }
+
+    if (strncmp(p, "==", 2) == 0 || strncmp(p, "!=", 2) == 0 ||
+        strncmp(p, "<=", 2) == 0 || strncmp(p, ">=", 2) == 0) {
+      cur = new_token(TK_RESERVED, cur, p, 2);
+      p += 2;
+      continue;
+    }
+
+    if (strncmp(p, "<", 1) == 0 || strncmp(p, ">", 1) == 0 ||
+        strncmp(p, "+", 1) == 0 || strncmp(p, "-", 1) == 0 ||
+        strncmp(p, "*", 1) == 0 || strncmp(p, "/", 1) == 0 ||
+        strncmp(p, "(", 1) == 0 || strncmp(p, ")", 1) == 0 ||
+        strncmp(p, ";", 1) == 0 || strncmp(p, "=", 1) == 0 ||
+        strncmp(p, "{", 1) == 0 || strncmp(p, "}", 1) == 0 ||
+        strncmp(p, ",", 1) == 0 || strncmp(p, "&", 1) == 0) {
+      cur = new_token(TK_RESERVED, cur, p++, 1);
+      continue;
+    }
+
+    if (isdigit(*p)) {
+      cur = new_token(TK_NUM, cur, p, 0);
+      char *start = p;
+      cur->val = strtol(p, &p, 10);
+      cur->len = p - start;
+      continue;
+    }
+
+    error_at(p, "トークナイズできません");
+  }
+
+  new_token(TK_EOF, cur, p, 0);
+  return head.next;
 }

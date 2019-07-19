@@ -165,7 +165,7 @@ void gen(Node *node) {
     return;
   }
 
-  if (node->kind == '=') {
+  if (node->kind == ND_ASSIGN) {
     gen_lval(node->lhs);
     gen(node->rhs);
 
@@ -183,16 +183,16 @@ void gen(Node *node) {
   printf("  pop rax\n");
 
   switch (node->kind) {
-    case '+':
+    case ND_ADD:
       printf("  add rax, rdi\n");
       break;
-    case '-':
+    case ND_SUB:
       printf("  sub rax, rdi\n");
       break;
-    case '*':
+    case ND_MUL:
       printf("  imul rdi\n");
       break;
-    case '/':
+    case ND_DIV:
       printf("  cqo\n");
       printf("  idiv rdi\n");
       break;
@@ -206,9 +206,9 @@ void gen(Node *node) {
       }
       printf("  movzb rax, al\n");
       break;
-    case '<':
-    case '>':
-      if (node->kind == '<') {
+    case ND_LT:
+    case ND_GT:
+      if (node->kind == ND_LT) {
         printf("  cmp rax, rdi\n");
       } else {
         printf("  cmp rdi, rax\n");
@@ -225,6 +225,8 @@ void gen(Node *node) {
       }
       printf("  setle al\n");
       printf("  movzb rax, al\n");
+      break;
+    default:
       break;
   }
 

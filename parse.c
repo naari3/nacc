@@ -273,7 +273,7 @@ Node *stmt() {
 Node *expr() { return assign(); };
 Node *assign() {
   Node *node = equality();
-  if (consume('=')) node = new_node('=', node, assign());
+  if (consume('=')) node = new_node(ND_ASSIGN, node, assign());
   return node;
 };
 
@@ -296,9 +296,9 @@ Node *relational() {
   for (;;) {
     // printf("%s\n", tokens[pos].input);
     if (consume('<'))
-      node = new_node('<', node, add());
+      node = new_node(ND_LT, node, add());
     else if (consume('>'))
-      node = new_node('>', node, add());
+      node = new_node(ND_GT, node, add());
     else if (consume(TK_LE))
       node = new_node(ND_LE, node, add());
     else if (consume(TK_GE))
@@ -313,9 +313,9 @@ Node *add() {
 
   for (;;) {
     if (consume('+'))
-      node = new_node('+', node, mul());
+      node = new_node(ND_ADD, node, mul());
     else if (consume('-'))
-      node = new_node('-', node, mul());
+      node = new_node(ND_SUB, node, mul());
     else
       return node;
   }
@@ -326,9 +326,9 @@ Node *mul() {
 
   for (;;) {
     if (consume('*'))
-      node = new_node('*', node, unary());
+      node = new_node(ND_MUL, node, unary());
     else if (consume('/'))
-      node = new_node('/', node, unary());
+      node = new_node(ND_DIV, node, unary());
     else
       return node;
   }
@@ -338,7 +338,7 @@ Node *unary() {
   if (consume('+'))
     return term();
   else if (consume('-'))
-    return new_node('-', new_node_num(0), term());
+    return new_node(ND_SUB, new_node_num(0), term());
   else if (consume('&'))
     return new_node(ND_ADDR, unary(), NULL);
   else if (consume('*'))

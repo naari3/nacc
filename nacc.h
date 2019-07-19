@@ -68,11 +68,18 @@ void map_put(Map *map, char *key, void *val);
 void *map_get(Map *map, char *key);
 extern Map *vars;
 
-enum {
+typedef enum {
   ND_NUM = 256,  // 整数ノード
+  ND_ADD,        // +
+  ND_SUB,        // -
+  ND_MUL,        // *
+  ND_DIV,        // /
+  ND_ASSIGN,     // =
   ND_EQ,         // ==ノード
   ND_NE,         // !=ノード
+  ND_LT,         // <ノード
   ND_LE,         // <=ノード
+  ND_GT,         // >ノード
   ND_GE,         // >=ノード
   ND_RETURN,     // returnノード
   ND_IF,         // ifノード
@@ -88,10 +95,10 @@ enum {
   ND_FUNC,       // 関数ノード
   ND_ADDR,       // & アドレスノード
   ND_DEREF,      // * 参照ノード
-};
+} NodeKind;
 
 typedef struct Node {
-  int kind;          // 演算子かND_NUM
+  NodeKind kind;     // 演算子かND_NUM
   struct Node *lhs;  // 左辺
   struct Node *rhs;  // 右辺
   int val;           // tyがND_NUMの場合のみ使う

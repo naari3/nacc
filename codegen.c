@@ -199,7 +199,7 @@ void gen(Node *node) {
     case ND_EQ:
     case ND_NE:
       printf("  cmp rax, rdi\n");
-      if (node->kind == TK_EQ) {
+      if (node->kind == ND_EQ) {
         printf("  sete al\n");
       } else {
         printf("  setne al\n");
@@ -218,7 +218,7 @@ void gen(Node *node) {
       break;
     case ND_LE:
     case ND_GE:
-      if (node->kind == TK_LE) {
+      if (node->kind == ND_LE) {
         printf("  cmp rax, rdi\n");
       } else {
         printf("  cmp rdi, rax\n");

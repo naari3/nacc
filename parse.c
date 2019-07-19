@@ -27,9 +27,9 @@ void error_at(char *loc, char *msg) {
   exit(1);
 }
 
-Node *new_node(int ty, Node *lhs, Node *rhs) {
+Node *new_node(int kind, Node *lhs, Node *rhs) {
   Node *node = malloc(sizeof(Node));
-  node->ty = ty;
+  node->kind = kind;
   node->lhs = lhs;
   node->rhs = rhs;
   return node;
@@ -37,21 +37,21 @@ Node *new_node(int ty, Node *lhs, Node *rhs) {
 
 Node *new_node_num(int val) {
   Node *node = malloc(sizeof(Node));
-  node->ty = ND_NUM;
+  node->kind = ND_NUM;
   node->val = val;
   return node;
 }
 
 Node *new_node_ident(char *name) {
   Node *node = malloc(sizeof(Node));
-  node->ty = ND_IDENT;
+  node->kind = ND_IDENT;
   node->name = name;
   return node;
 }
 
 Node *new_node_call(char *name, Vector *params) {
   Node *node = malloc(sizeof(Node));
-  node->ty = ND_CALL;
+  node->kind = ND_CALL;
   node->name = name;
   node->params = params;
   return node;
@@ -68,8 +68,8 @@ int expect_token(int kind) {
   return 1;
 }
 
-int consume(int ty) {
-  if (expect_token(ty)) {
+int consume(int kind) {
+  if (expect_token(kind)) {
     pos++;
     return 1;
   }
@@ -126,7 +126,7 @@ void program() {
 
 Node *func() {
   Node *node = malloc(sizeof(Node));
-  node->ty = ND_FUNC;
+  node->kind = ND_FUNC;
 
   if (!expect_token(TK_IDENT))
     error_at(((Token *)tokens->data[pos])->input, "関数名がありません");
@@ -159,11 +159,11 @@ Node *stmt() {
 
   if (consume(TK_RETURN)) {
     node = malloc(sizeof(Node));
-    node->ty = ND_RETURN;
+    node->kind = ND_RETURN;
     node->lhs = expr();
   } else if (consume(TK_IF)) {
     node = malloc(sizeof(Node));
-    node->ty = ND_IF;
+    node->kind = ND_IF;
     node->id = ((Token *)tokens->data[pos - 1])->id;
     if (consume('(')) {
       node->lhs = expr();
@@ -173,7 +173,7 @@ Node *stmt() {
       Node *then = stmt();
       if (consume(TK_ELSE)) {
         Node *elseNode = malloc(sizeof(Node));
-        elseNode->ty = ND_ELSE;
+        elseNode->kind = ND_ELSE;
         elseNode->id = ((Token *)tokens->data[pos - 1])->id;
         elseNode->lhs = then;
         elseNode->rhs = stmt();
@@ -188,7 +188,7 @@ Node *stmt() {
     }
   } else if (consume(TK_WHILE)) {
     node = malloc(sizeof(Node));
-    node->ty = ND_WHILE;
+    node->kind = ND_WHILE;
     node->id = ((Token *)tokens->data[pos - 1])->id;
     if (consume('(')) {
       node->lhs = expr();
@@ -203,20 +203,20 @@ Node *stmt() {
     }
   } else if (consume(TK_FOR)) {
     node = malloc(sizeof(Node));
-    node->ty = ND_FOR;
+    node->kind = ND_FOR;
     node->id = ((Token *)tokens->data[pos - 1])->id;
     Node *initNode = malloc(sizeof(Node));
     initNode->lhs = NULL;
     initNode->rhs = NULL;
-    initNode->ty = ND_FOR_INIT;
+    initNode->kind = ND_FOR_INIT;
     Node *condNode = malloc(sizeof(Node));
     condNode->lhs = NULL;
     condNode->rhs = NULL;
-    condNode->ty = ND_FOR_COND;
+    condNode->kind = ND_FOR_COND;
     Node *iterNode = malloc(sizeof(Node));
     iterNode->lhs = NULL;
     iterNode->rhs = NULL;
-    iterNode->ty = ND_FOR_ITER;
+    iterNode->kind = ND_FOR_ITER;
     condNode->rhs = iterNode;
     initNode->rhs = condNode;
     node->lhs = initNode;
@@ -247,7 +247,7 @@ Node *stmt() {
     }
   } else if (consume('{')) {
     node = malloc(sizeof(Node));
-    node->ty = ND_BLOCK;
+    node->kind = ND_BLOCK;
 
     Vector *stmts = new_vector();
     while (!consume('}')) {

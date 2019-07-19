@@ -1,7 +1,7 @@
 #include "nacc.h"
 
 void gen_lval(Node *node) {
-  if (node->ty != ND_IDENT) error("代入の左辺値が変数ではありません");
+  if (node->kind != ND_IDENT) error("代入の左辺値が変数ではありません");
 
   int offset = ((Int *)map_get(vars, node->name))->num;
   printf("  mov rax, rbp\n");
@@ -39,7 +39,7 @@ void gen_args(Vector *args) {
 }
 
 void gen(Node *node) {
-  if (node->ty == ND_FUNC) {
+  if (node->kind == ND_FUNC) {
     printf("%s:\n", node->name);
     gen_prologue(node->params);
     for (int i = 0; i < ((Vector *)node->stmts)->len; i++) {
@@ -55,7 +55,7 @@ void gen(Node *node) {
     return;
   }
 
-  if (node->ty == ND_RETURN) {
+  if (node->kind == ND_RETURN) {
     gen(node->lhs);
     printf("  pop rax\n");
     printf("  mov rsp, rbp\n");
@@ -64,12 +64,12 @@ void gen(Node *node) {
     return;
   }
 
-  if (node->ty == ND_NUM) {
+  if (node->kind == ND_NUM) {
     printf("  push %d\n", node->val);
     return;
   }
 
-  if (node->ty == ND_IDENT) {
+  if (node->kind == ND_IDENT) {
     gen_lval(node);
     printf("  pop rax\n");
     printf("  mov rax, [rax]\n");
@@ -77,11 +77,11 @@ void gen(Node *node) {
     return;
   }
 
-  if (node->ty == ND_IF) {
+  if (node->kind == ND_IF) {
     gen(node->lhs);
     printf("  pop rax\n");
     printf("  cmp rax, 0\n");
-    if (node->rhs->ty == ND_ELSE) {
+    if (node->rhs->kind == ND_ELSE) {
       printf("  je  .Lelse%d\n", node->rhs->id);
       gen(node->rhs->lhs);
       printf("  jmp  .LendIf%d\n", node->id);
@@ -97,7 +97,7 @@ void gen(Node *node) {
     return;
   }
 
-  if (node->ty == ND_WHILE) {
+  if (node->kind == ND_WHILE) {
     printf(".LbeginWhile%d:\n", node->id);
     gen(node->lhs);
     printf("  pop rax\n");
@@ -109,7 +109,7 @@ void gen(Node *node) {
     return;
   }
 
-  if (node->ty == ND_FOR) {
+  if (node->kind == ND_FOR) {
     if (node->lhs->lhs) {
       gen(node->lhs->lhs);  // init
     }
@@ -132,7 +132,7 @@ void gen(Node *node) {
     return;
   }
 
-  if (node->ty == ND_BLOCK) {
+  if (node->kind == ND_BLOCK) {
     for (int i = 0; i < ((Vector *)node->stmts)->len; i++) {
       gen(((Node *)((Vector *)node->stmts)->data[i]));
       if (i != 0) printf("  pop rax\n");
@@ -140,7 +140,7 @@ void gen(Node *node) {
     return;
   }
 
-  if (node->ty == ND_CALL) {
+  if (node->kind == ND_CALL) {
     for (int i = 0; i < node->params->len; i++) {
       gen(((Node *)((Vector *)node->params)->data[i]));
       printf("  pop rax\n");
@@ -152,12 +152,12 @@ void gen(Node *node) {
     return;
   }
 
-  if (node->ty == ND_ADDR) {
+  if (node->kind == ND_ADDR) {
     gen_lval(node->lhs);
     return;
   }
 
-  if (node->ty == ND_DEREF) {
+  if (node->kind == ND_DEREF) {
     gen(node->lhs);
     printf("  pop rax\n");
     printf("  mov rax, [rax]\n");
@@ -165,7 +165,7 @@ void gen(Node *node) {
     return;
   }
 
-  if (node->ty == '=') {
+  if (node->kind == '=') {
     gen_lval(node->lhs);
     gen(node->rhs);
 
@@ -182,7 +182,7 @@ void gen(Node *node) {
   printf("  pop rdi\n");
   printf("  pop rax\n");
 
-  switch (node->ty) {
+  switch (node->kind) {
     case '+':
       printf("  add rax, rdi\n");
       break;
@@ -199,7 +199,7 @@ void gen(Node *node) {
     case ND_EQ:
     case ND_NE:
       printf("  cmp rax, rdi\n");
-      if (node->ty == TK_EQ) {
+      if (node->kind == TK_EQ) {
         printf("  sete al\n");
       } else {
         printf("  setne al\n");
@@ -208,7 +208,7 @@ void gen(Node *node) {
       break;
     case '<':
     case '>':
-      if (node->ty == '<') {
+      if (node->kind == '<') {
         printf("  cmp rax, rdi\n");
       } else {
         printf("  cmp rdi, rax\n");
@@ -218,7 +218,7 @@ void gen(Node *node) {
       break;
     case ND_LE:
     case ND_GE:
-      if (node->ty == TK_LE) {
+      if (node->kind == TK_LE) {
         printf("  cmp rax, rdi\n");
       } else {
         printf("  cmp rdi, rax\n");

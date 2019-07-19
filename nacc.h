@@ -37,10 +37,10 @@ typedef enum {
 // トークンの型
 typedef struct {
   TokenKind kind;  // トークンの型
-  int val;      // tyがTK_NUMの場合、その数値
-  char *name;   // tyがTK_IDENTの場合、その名前
-  char *input;  // トークン文字列（エラーメッセージ用）
-  int id;       // tokenのid
+  int val;         // tyがTK_NUMの場合、その数値
+  char *name;      // tyがTK_IDENTの場合、その名前
+  char *input;     // トークン文字列（エラーメッセージ用）
+  int id;          // tokenのid
 } Token;
 
 void tokenize(char *p);
@@ -91,7 +91,7 @@ enum {
 };
 
 typedef struct Node {
-  int ty;            // 演算子かND_NUM
+  int kind;          // 演算子かND_NUM
   struct Node *lhs;  // 左辺
   struct Node *rhs;  // 右辺
   int val;           // tyがND_NUMの場合のみ使う

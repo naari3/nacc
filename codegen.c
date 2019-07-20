@@ -3,11 +3,10 @@
 int label = 1;
 
 void gen_lval(Node *node) {
-  if (node->kind != ND_IDENT) error("代入の左辺値が変数ではありません");
+  if (node->kind != ND_LVAR) error("代入の左辺値が変数ではありません");
 
-  int offset = ((Int *)map_get(vars, node->name))->num;
   printf("  mov rax, rbp\n");
-  printf("  sub rax, %d\n", offset);
+  printf("  sub rax, %d\n", node->offset);
   printf("  push rax\n");
 }
 
@@ -16,9 +15,16 @@ char *registers[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 // プロローグ
 // 変数分の領域を確保する
 void gen_prologue(Vector *args) {
+  int offset = 0;
+  if (locals) {
+    offset += locals->offset;
+  }
+  if (args->len) {
+    offset += args->len * 8;
+  }
   printf("  push rbp\n");
   printf("  mov rbp, rsp\n");
-  printf("  sub rsp, %d\n", vars->keys->len * 8);
+  printf("  sub rsp, %d\n", offset);
   for (int i = 0; i < args->len; i++) {
     gen_lval(args->data[i]);
     printf("  pop rax\n");
@@ -47,11 +53,11 @@ void gen(Node *node) {
     for (int i = 0; i < ((Vector *)node->stmts)->len; i++) {
       // 抽象構文木を下りながらコード生成
       gen(((Node *)((Vector *)node->stmts)->data[i]));
-
-      // 式の評価結果としてスタックに一つの値が残っている
-      // はずなので、スタックが溢れないようにポップしておく
-      printf("  pop rax\n");
     }
+
+    // 式の評価結果としてスタックに一つの値が残っている
+    // はずなので、スタックが溢れないようにポップしておく
+    printf("  pop rax\n");
     gen_epirogue();
 
     return;
@@ -71,7 +77,7 @@ void gen(Node *node) {
     return;
   }
 
-  if (node->kind == ND_IDENT) {
+  if (node->kind == ND_LVAR) {
     gen_lval(node);
     printf("  pop rax\n");
     printf("  mov rax, [rax]\n");

@@ -1,7 +1,6 @@
 #include "nacc.h"
 
 int pos;
-Vector *tokens;
 int if_counter = 0;
 int else_counter = 0;
 int while_counter = 0;
@@ -122,7 +121,7 @@ Node *unary();
 Node *term();
 
 void parse(char *codestr) {
-  token = tokenize2(codestr);
+  token = tokenize(codestr);
   vars = new_map();
   return program();
 };
@@ -408,132 +407,7 @@ Token *new_token(TokenKind kind, Token *cur, char *str, int length) {
   return tok;
 }
 
-// user_inputが指している文字列を
-// トークンに分割してtokensに保存する
-void tokenize(char *p) {
-  while (*p) {
-    // 空白文字をスキップ
-    if (isspace(*p)) {
-      p++;
-      continue;
-    }
-
-    if (strncmp(p, "return", 6) == 0 && !is_alnum(p[6])) {
-      Token *token = malloc(sizeof(Token));
-      token->kind = TK_RETURN;
-      token->input = p;
-      p += 6;
-      vec_push(tokens, token);
-      continue;
-    }
-
-    if (strncmp(p, "if", 2) == 0 && !is_alnum(p[2])) {
-      Token *token = malloc(sizeof(Token));
-      token->kind = TK_IF;
-      token->input = p;
-      token->id = if_counter++;
-      p += 2;
-      vec_push(tokens, token);
-      continue;
-    }
-
-    if (strncmp(p, "else", 4) == 0 && !is_alnum(p[4])) {
-      Token *token = malloc(sizeof(Token));
-      token->kind = TK_ELSE;
-      token->input = p;
-      token->id = else_counter++;
-      p += 4;
-      vec_push(tokens, token);
-      continue;
-    }
-
-    if (strncmp(p, "while", 5) == 0 && !is_alnum(p[5])) {
-      Token *token = malloc(sizeof(Token));
-      token->kind = TK_WHILE;
-      token->input = p;
-      token->id = while_counter++;
-      p += 5;
-      vec_push(tokens, token);
-      continue;
-    }
-
-    if (strncmp(p, "for", 3) == 0 && !is_alnum(p[3])) {
-      Token *token = malloc(sizeof(Token));
-      token->kind = TK_FOR;
-      token->input = p;
-      token->id = for_counter++;
-      p += 3;
-      vec_push(tokens, token);
-      continue;
-    }
-
-    if (is_al(*p)) {
-      int token_len = 1;
-      while (is_alnum(p[token_len])) {
-        token_len++;
-      }
-      Token *token = malloc(sizeof(Token));
-      token->kind = TK_IDENT;
-      token->name = strndup(p, token_len);
-      token->input = p;
-      vec_push(tokens, token);
-      p += token_len;
-      continue;
-    }
-
-    if (strncmp(p, "==", 2) == 0 || strncmp(p, "!=", 2) == 0 ||
-        strncmp(p, "<=", 2) == 0 || strncmp(p, ">=", 2) == 0) {
-      Token *token = malloc(sizeof(Token));
-      if (strncmp(p, "==", 2) == 0) {
-        token->kind = TK_EQ;
-      } else if (strncmp(p, "!=", 2) == 0) {
-        token->kind = TK_NE;
-      } else if (strncmp(p, "<=", 2) == 0) {
-        token->kind = TK_LE;
-      } else if (strncmp(p, ">=", 2) == 0) {
-        token->kind = TK_GE;
-      }
-      token->input = p;
-      p++;
-      p++;  // 2文字なので
-      vec_push(tokens, token);
-      continue;
-    }
-
-    if (strncmp(p, "<", 1) == 0 || strncmp(p, ">", 1) == 0 ||
-        strncmp(p, "+", 1) == 0 || strncmp(p, "-", 1) == 0 ||
-        strncmp(p, "*", 1) == 0 || strncmp(p, "/", 1) == 0 ||
-        strncmp(p, "(", 1) == 0 || strncmp(p, ")", 1) == 0 ||
-        strncmp(p, ";", 1) == 0 || strncmp(p, "=", 1) == 0 ||
-        strncmp(p, "{", 1) == 0 || strncmp(p, "}", 1) == 0 ||
-        strncmp(p, ",", 1) == 0 || strncmp(p, "&", 1) == 0) {
-      Token *token = malloc(sizeof(Token));
-      token->kind = *p;
-      token->input = p;
-      p++;
-      vec_push(tokens, token);
-      continue;
-    }
-
-    if (isdigit(*p)) {
-      Token *token = malloc(sizeof(Token));
-      token->kind = TK_NUM;
-      token->input = p;
-      token->val = strtol(p, &p, 10);
-      vec_push(tokens, token);
-      continue;
-    }
-
-    error_at(p, "トークナイズできません");
-  }
-
-  Token *token = malloc(sizeof(Token));
-  token->kind = TK_EOF;
-  token->input = p;
-  vec_push(tokens, token);
-}
-
-Token *tokenize2(char *p) {
+Token *tokenize(char *p) {
   Token head;
   head.next = NULL;
   Token *cur = &head;

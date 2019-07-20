@@ -44,20 +44,15 @@ struct Token {
   char *name;      // kindがTK_IDENTの場合、その名前
   char *input;     // トークン文字列（エラーメッセージ用）
   int len;         // トークンの長さ
-  int id;          // tokenのid
 };
 
-void tokenize(char *p);
-Token *tokenize2(char *p);
+Token *tokenize(char *p);
 
 typedef struct {
   void **data;
   int capacity;
   int len;
 } Vector;
-
-// トークナイズした結果のトークン列はここに保存される
-extern Vector *tokens;
 
 Vector *new_vector();
 void vec_push(Vector *vec, void *elem);

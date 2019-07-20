@@ -67,7 +67,6 @@ typedef struct {
 Map *new_map();
 void map_put(Map *map, char *key, void *val);
 void *map_get(Map *map, char *key);
-extern Map *vars;
 
 typedef enum {
   ND_NUM,       // 整数ノード
@@ -108,7 +107,6 @@ typedef struct Node {
   int offset;        // RBPからのオフセット
   Vector *stmts;     // ブロック用のstmtのベクタ
   Vector *params;    // 関数呼び出し時の引数用のstmtのベクタ
-  Map *vars;         // 変数が入る
 } Node;
 
 void parse(char *codestr);

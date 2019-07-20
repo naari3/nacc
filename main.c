@@ -1,7 +1,6 @@
 #include "nacc.h"
 
 char *user_input;
-Map *vars;
 
 int main(int argc, char **argv) {
   if (argc != 2) {

@@ -153,7 +153,6 @@ Node *term();
 
 void parse(char *codestr) {
   token = tokenize(codestr);
-  vars = new_map();
   return program();
 };
 
@@ -442,7 +441,6 @@ Node *term() {
       node->name = name;
       return node;
     }
-    map_put(vars, name, new_int(8 * (vars->keys->len + 1)));
   }
   if (consume_type()) {
     Token *tok;

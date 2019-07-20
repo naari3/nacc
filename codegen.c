@@ -1,5 +1,7 @@
 #include "nacc.h"
 
+int label = 1;
+
 void gen_lval(Node *node) {
   if (node->kind != ND_IDENT) error("代入の左辺値が変数ではありません");
 
@@ -78,42 +80,50 @@ void gen(Node *node) {
   }
 
   if (node->kind == ND_IF) {
+    int if_label;
+    if_label = label;
     gen(node->lhs);
     printf("  pop rax\n");
     printf("  cmp rax, 0\n");
     if (node->rhs->kind == ND_ELSE) {
-      printf("  je  .Lelse%d\n", node->rhs->id);
+      printf("  je  .Lelse%d\n", if_label);
       gen(node->rhs->lhs);
-      printf("  jmp  .LendIf%d\n", node->id);
-      printf(".Lelse%d:\n", node->rhs->id);
+      printf("  jmp  .LendIf%d\n", if_label);
+      printf(".Lelse%d:\n", if_label);
       gen(node->rhs->rhs);
-      printf(".LendIf%d:\n", node->id);
+      printf(".LendIf%d:\n", if_label);
     } else {
-      printf("  je  .LendIf%d\n", node->id);
+      printf("  je  .LendIf%d\n", if_label);
       gen(node->rhs);
-      printf(".LendIf%d:\n", node->id);
+      printf(".LendIf%d:\n", if_label);
       printf("  push %d\n", 0);
     }
+    label++;
     return;
   }
 
   if (node->kind == ND_WHILE) {
-    printf(".LbeginWhile%d:\n", node->id);
+    int while_label;
+    while_label = label;
+    printf(".LbeginWhile%d:\n", while_label);
     gen(node->lhs);
     printf("  pop rax\n");
     printf("  cmp rax, 0\n");
-    printf("  je  .LendWhile%d\n", node->id);
+    printf("  je  .LendWhile%d\n", while_label);
     gen(node->rhs);
-    printf("  jmp .LbeginWhile%d\n", node->id);
-    printf(".LendWhile%d:\n", node->id);
+    printf("  jmp .LbeginWhile%d\n", while_label);
+    printf(".LendWhile%d:\n", while_label);
+    label++;
     return;
   }
 
   if (node->kind == ND_FOR) {
+    int for_label;
+    for_label = label;
     if (node->lhs->lhs) {
       gen(node->lhs->lhs);  // init
     }
-    printf(".LbeginFor%d:\n", node->id);
+    printf(".LbeginFor%d:\n", for_label);
     if (node->lhs->rhs->lhs) {
       gen(node->lhs->rhs->lhs);  // cond
     } else {
@@ -121,13 +131,14 @@ void gen(Node *node) {
     }
     printf("  pop rax\n");
     printf("  cmp rax, 0\n");
-    printf("  je  .LendFor%d\n", node->id);
+    printf("  je  .LendFor%d\n", for_label);
     gen(node->rhs);  // body
     if (node->lhs->rhs->rhs->lhs) {
       gen(node->lhs->rhs->rhs->lhs);  // iter
     }
-    printf("  jmp .LbeginFor%d\n", node->id);
-    printf(".LendFor%d:\n", node->id);
+    printf("  jmp .LbeginFor%d\n", for_label);
+    printf(".LendFor%d:\n", for_label);
+    label++;
 
     return;
   }

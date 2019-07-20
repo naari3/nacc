@@ -1,12 +1,12 @@
 #include "nacc.h"
 
 int pos;
-Vector *tokens;
 int if_counter = 0;
 int else_counter = 0;
 int while_counter = 0;
 int for_counter = 0;
 Node *code[100];
+Token *token;
 
 // エラーを報告するための関数
 // printfと同じ引数を取る
@@ -63,17 +63,27 @@ Int *new_int(int i) {
   return in;
 }
 
-int expect_token(int kind) {
-  if (((Token *)tokens->data[pos])->kind != kind) return 0;
-  return 1;
-}
+int expect_token(int kind) { return token->kind == kind; }
 
 int consume(int kind) {
   if (expect_token(kind)) {
-    pos++;
+    token = token->next;
     return 1;
   }
-  return 0;
+}
+
+Token *consume_ident(void) {
+  if (token->kind != TK_IDENT) return NULL;
+  Token *tok = token;
+  token = token->next;
+  return tok;
+}
+
+int consume_number(void) {
+  if (!expect_token(TK_NUM)) return NULL;
+  Token *tok = token;
+  token = token->next;
+  return tok->val;
 }
 
 // program    = func*
@@ -111,10 +121,8 @@ Node *unary();
 Node *term();
 
 void parse(char *codestr) {
-  tokens = new_vector();
-  tokenize(codestr);
+  token = tokenize(codestr);
   vars = new_map();
-  pos = 0;
   return program();
 };
 
@@ -126,26 +134,29 @@ void program() {
 
 Node *func() {
   Node *node = malloc(sizeof(Node));
+  Token *tok;
   node->kind = ND_FUNC;
+  if (!expect_token(TK_IDENT) || !(tok = consume_ident()))
+    error_at(token->input, "関数名がありません");
 
-  if (!expect_token(TK_IDENT))
-    error_at(((Token *)tokens->data[pos])->input, "関数名がありません");
-  node->name = ((Token *)tokens->data[pos++])->name;
+  node->name = (char *)malloc(tok->len * sizeof(char));
+  strncpy(node->name, tok->input, tok->len);
+
+  node->name[tok->len] = '\0';
 
   Vector *params = new_vector();
-  if (!consume('('))
-    error_at(((Token *)tokens->data[pos])->input, "引数定義が存在しません");
+  if (!consume('(')) error_at(token->input, "引数定義が存在しません");
   while (!consume(')')) {
     vec_push(params, term());
     if (consume(')')) break;
     if (!consume(',')) {
-      error_at(((Token *)tokens->data[pos])->input, "コンマではありません");
+      error_at(token->input, "コンマではありません");
     }
   }
   node->params = params;
 
   Vector *stmts = new_vector();
-  consume('{');
+  if (!consume('{')) error_at(token->input, "'{'ではありません");
   while (!consume('}')) {
     vec_push(stmts, (void *)stmt());
   }
@@ -164,17 +175,14 @@ Node *stmt() {
   } else if (consume(TK_IF)) {
     node = malloc(sizeof(Node));
     node->kind = ND_IF;
-    node->id = ((Token *)tokens->data[pos - 1])->id;
     if (consume('(')) {
       node->lhs = expr();
       if (!consume(')'))
-        error_at(((Token *)tokens->data[pos])->input,
-                 "開きカッコに対応する閉じカッコがありません");
+        error_at(token->input, "開きカッコに対応する閉じカッコがありません");
       Node *then = stmt();
       if (consume(TK_ELSE)) {
         Node *elseNode = malloc(sizeof(Node));
         elseNode->kind = ND_ELSE;
-        elseNode->id = ((Token *)tokens->data[pos - 1])->id;
         elseNode->lhs = then;
         elseNode->rhs = stmt();
         node->rhs = elseNode;
@@ -184,27 +192,24 @@ Node *stmt() {
 
       return node;
     } else {
-      error_at(((Token *)tokens->data[pos])->input, "条件のカッコがありません");
+      error_at(token->input, "条件のカッコがありません");
     }
   } else if (consume(TK_WHILE)) {
     node = malloc(sizeof(Node));
     node->kind = ND_WHILE;
-    node->id = ((Token *)tokens->data[pos - 1])->id;
     if (consume('(')) {
       node->lhs = expr();
       if (!consume(')'))
-        error_at(((Token *)tokens->data[pos])->input,
-                 "開きカッコに対応する閉じカッコがありません");
+        error_at(token->input, "開きカッコに対応する閉じカッコがありません");
       node->rhs = stmt();
 
       return node;
     } else {
-      error_at(((Token *)tokens->data[pos])->input, "条件のカッコがありません");
+      error_at(token->input, "条件のカッコがありません");
     }
   } else if (consume(TK_FOR)) {
     node = malloc(sizeof(Node));
     node->kind = ND_FOR;
-    node->id = ((Token *)tokens->data[pos - 1])->id;
     Node *initNode = malloc(sizeof(Node));
     initNode->lhs = NULL;
     initNode->rhs = NULL;
@@ -223,27 +228,22 @@ Node *stmt() {
     if (consume('(')) {
       if (!consume(';')) {
         initNode->lhs = expr();
-        if (!consume(';'))
-          error_at(((Token *)tokens->data[pos])->input,
-                   "';'ではないトークンです");
+        if (!consume(';')) error_at(token->input, "';'ではないトークンです");
       }
       if (!consume(';')) {
         condNode->lhs = expr();
-        if (!consume(';'))
-          error_at(((Token *)tokens->data[pos])->input,
-                   "';'ではないトークンです");
+        if (!consume(';')) error_at(token->input, "';'ではないトークンです");
       }
       if (!consume(')')) {
         iterNode->lhs = expr();
         if (!consume(')'))
-          error_at(((Token *)tokens->data[pos])->input,
-                   "開きカッコに対応する閉じカッコがありません");
+          error_at(token->input, "開きカッコに対応する閉じカッコがありません");
       }
       node->rhs = stmt();
 
       return node;
     } else {
-      error_at(((Token *)tokens->data[pos])->input, "条件のカッコがありません");
+      error_at(token->input, "条件のカッコがありません");
     }
   } else if (consume('{')) {
     node = malloc(sizeof(Node));
@@ -252,7 +252,7 @@ Node *stmt() {
     Vector *stmts = new_vector();
     while (!consume('}')) {
       if (consume(TK_EOF)) {
-        error_at(((Token *)tokens->data[pos])->input,
+        error_at(token->input,
                  "ブロックの開きカッコに対応する閉じカッコがありません");
       }
       vec_push(stmts, (void *)stmt());
@@ -264,8 +264,7 @@ Node *stmt() {
     node = expr();
   }
 
-  if (!consume(';'))
-    error_at(((Token *)tokens->data[pos])->input, "';'ではないトークンです");
+  if (!consume(';')) error_at(token->input, "';'ではないトークンです");
 
   return node;
 };
@@ -294,7 +293,6 @@ Node *relational() {
   // return node;
 
   for (;;) {
-    // printf("%s\n", tokens[pos].input);
     if (consume('<'))
       node = new_node(ND_LT, node, add());
     else if (consume('>'))
@@ -351,18 +349,25 @@ Node *term() {
   if (consume('(')) {
     Node *node = expr();
     if (!consume(')'))
-      error_at(((Token *)tokens->data[pos])->input,
-               "開きカッコに対応する閉じカッコがありません");
+      error_at(token->input, "開きカッコに対応する閉じカッコがありません");
     return node;
   }
 
   // そうでなければ数値のはず
-  if (((Token *)tokens->data[pos])->kind == TK_NUM)
-    return new_node_num(((Token *)tokens->data[pos++])->val);
+  if (token->kind == TK_NUM) return new_node_num(consume_number());
 
-  if (((Token *)tokens->data[pos])->kind == TK_IDENT) {
+  if (token->kind == TK_IDENT) {
     Vector *params = new_vector();
-    char *name = ((Token *)tokens->data[pos++])->name;
+
+    Token* tok;
+    char *name;
+    if (!expect_token(TK_IDENT) || !(tok = consume_ident()))
+      error_at(token->input, "関数名がありません");
+
+    name = (char *)malloc(tok->len * sizeof(char));
+    strncpy(name, tok->input, tok->len);
+
+    name[tok->len] = '\0';
     if (consume('(')) {  // call
       for (int i = 0; i < 6; i++) {
         if (consume(')')) {
@@ -374,7 +379,7 @@ Node *term() {
           }
         }
         if (!consume(',')) {
-          error_at(((Token *)tokens->data[pos])->input, "コンマではありません");
+          error_at(token->input, "コンマではありません");
         }
       }
     }
@@ -382,8 +387,7 @@ Node *term() {
     return new_node_ident(name);
   }
 
-  error_at(((Token *)tokens->data[pos])->input,
-           "数値でも開きカッコでもないトークンです");
+  error_at(token->input, "数値でも開きカッコでもないトークンです");
 }
 
 int is_al(char c) {
@@ -392,9 +396,22 @@ int is_al(char c) {
 
 int is_alnum(char c) { return is_al(c) || ('0' <= c && c <= '9'); }
 
-// user_inputが指している文字列を
-// トークンに分割してtokensに保存する
-void tokenize(char *p) {
+// 新しいトークンを作成してcurに繋げる
+Token *new_token(TokenKind kind, Token *cur, char *str, int length) {
+  Token *tok = calloc(1, sizeof(Token));
+  tok->kind = kind;
+  tok->input = str;
+  tok->len = length;
+
+  cur->next = tok;
+  return tok;
+}
+
+Token *tokenize(char *p) {
+  Token head;
+  head.next = NULL;
+  Token *cur = &head;
+
   while (*p) {
     // 空白文字をスキップ
     if (isspace(*p)) {
@@ -403,51 +420,32 @@ void tokenize(char *p) {
     }
 
     if (strncmp(p, "return", 6) == 0 && !is_alnum(p[6])) {
-      Token *token = malloc(sizeof(Token));
-      token->kind = TK_RETURN;
-      token->input = p;
+      cur = new_token(TK_RETURN, cur, p, 6);
       p += 6;
-      vec_push(tokens, token);
       continue;
     }
 
     if (strncmp(p, "if", 2) == 0 && !is_alnum(p[2])) {
-      Token *token = malloc(sizeof(Token));
-      token->kind = TK_IF;
-      token->input = p;
-      token->id = if_counter++;
+      cur = new_token(TK_IF, cur, p, 2);
       p += 2;
-      vec_push(tokens, token);
       continue;
     }
 
     if (strncmp(p, "else", 4) == 0 && !is_alnum(p[4])) {
-      Token *token = malloc(sizeof(Token));
-      token->kind = TK_ELSE;
-      token->input = p;
-      token->id = else_counter++;
+      cur = new_token(TK_ELSE, cur, p, 4);
       p += 4;
-      vec_push(tokens, token);
       continue;
     }
 
     if (strncmp(p, "while", 5) == 0 && !is_alnum(p[5])) {
-      Token *token = malloc(sizeof(Token));
-      token->kind = TK_WHILE;
-      token->input = p;
-      token->id = while_counter++;
+      cur = new_token(TK_WHILE, cur, p, 5);
       p += 5;
-      vec_push(tokens, token);
       continue;
     }
 
     if (strncmp(p, "for", 3) == 0 && !is_alnum(p[3])) {
-      Token *token = malloc(sizeof(Token));
-      token->kind = TK_FOR;
-      token->input = p;
-      token->id = for_counter++;
+      cur = new_token(TK_FOR, cur, p, 3);
       p += 3;
-      vec_push(tokens, token);
       continue;
     }
 
@@ -456,31 +454,26 @@ void tokenize(char *p) {
       while (is_alnum(p[token_len])) {
         token_len++;
       }
-      Token *token = malloc(sizeof(Token));
-      token->kind = TK_IDENT;
-      token->name = strndup(p, token_len);
-      token->input = p;
-      vec_push(tokens, token);
+
+      cur = new_token(TK_IDENT, cur, p, token_len);
       p += token_len;
       continue;
     }
 
     if (strncmp(p, "==", 2) == 0 || strncmp(p, "!=", 2) == 0 ||
         strncmp(p, "<=", 2) == 0 || strncmp(p, ">=", 2) == 0) {
-      Token *token = malloc(sizeof(Token));
+      TokenKind kind;
       if (strncmp(p, "==", 2) == 0) {
-        token->kind = TK_EQ;
+        kind = TK_EQ;
       } else if (strncmp(p, "!=", 2) == 0) {
-        token->kind = TK_NE;
+        kind = TK_NE;
       } else if (strncmp(p, "<=", 2) == 0) {
-        token->kind = TK_LE;
+        kind = TK_LE;
       } else if (strncmp(p, ">=", 2) == 0) {
-        token->kind = TK_GE;
+        kind = TK_GE;
       }
-      token->input = p;
-      p++;
-      p++;  // 2文字なので
-      vec_push(tokens, token);
+      cur = new_token(kind, cur, p, 2);
+      p += 2;
       continue;
     }
 
@@ -491,28 +484,22 @@ void tokenize(char *p) {
         strncmp(p, ";", 1) == 0 || strncmp(p, "=", 1) == 0 ||
         strncmp(p, "{", 1) == 0 || strncmp(p, "}", 1) == 0 ||
         strncmp(p, ",", 1) == 0 || strncmp(p, "&", 1) == 0) {
-      Token *token = malloc(sizeof(Token));
-      token->kind = *p;
-      token->input = p;
+      cur = new_token(*p, cur, p, 1);
       p++;
-      vec_push(tokens, token);
       continue;
     }
 
     if (isdigit(*p)) {
-      Token *token = malloc(sizeof(Token));
-      token->kind = TK_NUM;
-      token->input = p;
-      token->val = strtol(p, &p, 10);
-      vec_push(tokens, token);
+      cur = new_token(TK_NUM, cur, p, 0);
+      char *start = p;
+      cur->val = strtol(p, &p, 10);
+      cur->len = p - start;
       continue;
     }
 
     error_at(p, "トークナイズできません");
   }
 
-  Token *token = malloc(sizeof(Token));
-  token->kind = TK_EOF;
-  token->input = p;
-  vec_push(tokens, token);
+  new_token(TK_EOF, cur, p, 0);
+  return head.next;
 }

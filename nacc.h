@@ -20,8 +20,7 @@ Int *new_int(int i);
 
 // トークンの型を表す値
 typedef enum {
-  TK_RESERVED,  // 整数トークン
-  TK_NUM,       // 整数トークン
+  TK_NUM = 256,       // 整数トークン
   TK_EQ,        // ==トークン
   TK_NE,        // !=トークン
   TK_LE,        // <=トークン
@@ -49,6 +48,7 @@ struct Token {
 };
 
 void tokenize(char *p);
+Token *tokenize2(char *p);
 
 typedef struct {
   void **data;

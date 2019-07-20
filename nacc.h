@@ -104,7 +104,6 @@ typedef struct Node {
   struct Node *rhs;  // 右辺
   int val;           // kindがND_NUMの場合のみ使う
   char *name;        // kindがND_IDENTの場合のみ使う
-  int id;            // nodeのid
   int offset;        // RBPからのオフセット
   Vector *stmts;     // ブロック用のstmtのベクタ
   Vector *params;    // 関数呼び出し時の引数用のstmtのベクタ

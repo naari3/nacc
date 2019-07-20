@@ -92,6 +92,15 @@ int consume(int kind) {
     token = token->next;
     return 1;
   }
+  return 0;
+}
+
+int consume_type() {
+  if (expect_token(TK_INT)) {
+    token = token->next;
+    return 1;
+  }
+  return 0;
 }
 
 Token *consume_ident(void) {
@@ -109,7 +118,7 @@ int consume_number(void) {
 }
 
 // program    = func*
-// func       = ident "("  ")" { stmt* }
+// func       = ident "(" ("int" ident)* ")" { stmt* }
 // stmt       = expr ";"
 //            | { stmt* }
 //            | "if" "(" expr ")" stmt ("else" stmt)?
@@ -127,7 +136,7 @@ int consume_number(void) {
 //            | "*" unary
 //            | "&" unary
 // term       = num |
-//            | ident ("(" ")")?
+//            | "int"? ident ("(" ")")?
 //            | "(" expr ")"
 
 void program();
@@ -158,6 +167,7 @@ Node *func() {
   Node *node = malloc(sizeof(Node));
   Token *tok;
   node->kind = ND_FUNC;
+  if (!consume_type()) error_at(token->input, "関数の型がありません");
   if (!expect_token(TK_IDENT) || !(tok = consume_ident()))
     error_at(token->input, "関数名がありません");
 
@@ -169,7 +179,21 @@ Node *func() {
   Vector *params = new_vector();
   if (!consume('(')) error_at(token->input, "引数定義が存在しません");
   while (!consume(')')) {
-    vec_push(params, term());
+    if (!consume_type()) error_at(token->input, "型ではありません");
+
+    Token *tok;
+    char *name;
+    if (!expect_token(TK_IDENT) || !(tok = consume_ident()))
+      error_at(token->input, "変数名がありません");
+    name = (char *)malloc(tok->len * sizeof(char));
+    strncpy(name, tok->input, tok->len);
+    name[tok->len] = '\0';
+
+    Node *node = new_node(ND_LVAR, NULL, NULL);
+
+    set_lvar(node, tok->input, tok->len);
+
+    vec_push(params, node);
     if (consume(')')) break;
     if (!consume(',')) {
       error_at(token->input, "コンマではありません");
@@ -412,13 +436,29 @@ Node *term() {
       if (lvar) {
         node->offset = lvar->offset;
       } else {
-        set_lvar(node, tok->input, tok->len);
+        error_at(tok->input, "宣言されていない変数です");
       }
 
       node->name = name;
       return node;
     }
     map_put(vars, name, new_int(8 * (vars->keys->len + 1)));
+  }
+  if (consume_type()) {
+    Token *tok;
+    char *name;
+    if (!expect_token(TK_IDENT) || !(tok = consume_ident()))
+      error_at(token->input, "関数名がありません");
+    LVar *lvar = find_lvar(tok);
+    if (lvar) error_at(tok->input, "既に宣言されています");
+    name = (char *)malloc(tok->len * sizeof(char));
+    strncpy(name, tok->input, tok->len);
+    name[tok->len] = '\0';
+
+    Node *node = new_node(ND_LVAR, NULL, NULL);
+
+    set_lvar(node, tok->input, tok->len);
+    return node;
   }
 
   error_at(token->input, "数値でも開きカッコでもないトークンです");
@@ -479,6 +519,12 @@ Token *tokenize(char *p) {
 
     if (strncmp(p, "for", 3) == 0 && !is_alnum(p[3])) {
       cur = new_token(TK_FOR, cur, p, 3);
+      p += 3;
+      continue;
+    }
+
+    if (strncmp(p, "int", 3) == 0 && !is_alnum(p[3])) {
+      cur = new_token(TK_INT, cur, p, 3);
       p += 3;
       continue;
     }

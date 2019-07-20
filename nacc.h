@@ -25,6 +25,7 @@ typedef enum {
   TK_NE,         // !=トークン
   TK_LE,         // <=トークン
   TK_GE,         // >=トークン
+  TK_INT,        // type int
   TK_EOF,        // 入力の終わりを表すトークン
   TK_RETURN,     // returnトークン
   TK_IF,         // ifトークン

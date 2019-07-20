@@ -20,18 +20,18 @@ Int *new_int(int i);
 
 // トークンの型を表す値
 typedef enum {
-  TK_NUM = 256,       // 整数トークン
-  TK_EQ,        // ==トークン
-  TK_NE,        // !=トークン
-  TK_LE,        // <=トークン
-  TK_GE,        // >=トークン
-  TK_EOF,       // 入力の終わりを表すトークン
-  TK_RETURN,    // returnトークン
-  TK_IF,        // ifトークン
-  TK_ELSE,      // elseトークン
-  TK_WHILE,     // whileトークン
-  TK_FOR,       // forトークン
-  TK_IDENT,     // 識別子トークン
+  TK_NUM = 256,  // 整数トークン
+  TK_EQ,         // ==トークン
+  TK_NE,         // !=トークン
+  TK_LE,         // <=トークン
+  TK_GE,         // >=トークン
+  TK_EOF,        // 入力の終わりを表すトークン
+  TK_RETURN,     // returnトークン
+  TK_IF,         // ifトークン
+  TK_ELSE,       // elseトークン
+  TK_WHILE,      // whileトークン
+  TK_FOR,        // forトークン
+  TK_IDENT,      // 識別子トークン
 } TokenKind;
 
 typedef struct Token Token;

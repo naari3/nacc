@@ -27,6 +27,28 @@ void error_at(char *loc, char *msg) {
   exit(1);
 }
 
+LVar *find_lvar(Token *tok) {
+  for (LVar *var = locals; var; var = var->next) {
+    if (var->len == tok->len && !memcmp(tok->input, var->name, var->len))
+      return var;
+  }
+  return NULL;
+}
+
+void set_lvar(Node *node, char *name, int length) {
+  node->kind = ND_LVAR;
+  LVar *lvar = malloc(sizeof(LVar));
+  if (locals) lvar->next = locals;
+  lvar->name = name;
+  lvar->len = length;
+  if (locals)
+    lvar->offset = locals->offset + 8;
+  else
+    lvar->offset = 8;
+  node->offset = lvar->offset;
+  locals = lvar;
+}
+
 Node *new_node(int kind, Node *lhs, Node *rhs) {
   Node *node = malloc(sizeof(Node));
   node->kind = kind;
@@ -353,21 +375,22 @@ Node *term() {
     return node;
   }
 
-  // そうでなければ数値のはず
+  // そうでなければ数値
   if (token->kind == TK_NUM) return new_node_num(consume_number());
 
+  // でなければ変数
   if (token->kind == TK_IDENT) {
     Vector *params = new_vector();
 
-    Token* tok;
+    Token *tok;
     char *name;
     if (!expect_token(TK_IDENT) || !(tok = consume_ident()))
       error_at(token->input, "関数名がありません");
 
     name = (char *)malloc(tok->len * sizeof(char));
     strncpy(name, tok->input, tok->len);
-
     name[tok->len] = '\0';
+
     if (consume('(')) {  // call
       for (int i = 0; i < 6; i++) {
         if (consume(')')) {
@@ -382,9 +405,20 @@ Node *term() {
           error_at(token->input, "コンマではありません");
         }
       }
+    } else {
+      Node *node = new_node(ND_LVAR, NULL, NULL);
+      LVar *lvar = find_lvar(tok);
+
+      if (lvar) {
+        node->offset = lvar->offset;
+      } else {
+        set_lvar(node, tok->input, tok->len);
+      }
+
+      node->name = name;
+      return node;
     }
     map_put(vars, name, new_int(8 * (vars->keys->len + 1)));
-    return new_node_ident(name);
   }
 
   error_at(token->input, "数値でも開きカッコでもないトークンです");

@@ -90,6 +90,7 @@ typedef enum {
   ND_FOR_COND,  // forの条件式ノード
   ND_FOR_ITER,  // forの増減処理ノード
   ND_IDENT,     // 識別子ノード
+  ND_LVAR,      // 識別子ノード
   ND_BLOCK,     // ブロックノード
   ND_CALL,      // 関数呼び出しノード
   ND_FUNC,      // 関数ノード
@@ -104,6 +105,7 @@ typedef struct Node {
   int val;           // kindがND_NUMの場合のみ使う
   char *name;        // kindがND_IDENTの場合のみ使う
   int id;            // nodeのid
+  int offset;        // RBPからのオフセット
   Vector *stmts;     // ブロック用のstmtのベクタ
   Vector *params;    // 関数呼び出し時の引数用のstmtのベクタ
   Map *vars;         // 変数が入る
@@ -115,6 +117,19 @@ void gen(Node *node);
 
 extern Node *code[];
 extern Node *functions[];
+
+typedef struct LVar LVar;
+
+// ローカル変数の型
+struct LVar {
+  LVar *next;  // 次の変数かNULL
+  char *name;  // 変数の名前
+  int len;     // 名前の長さ
+  int offset;  // RBPからのオフセット
+};
+
+// ローカル変数
+LVar *locals;
 
 extern int pos;
 extern char *user_input;

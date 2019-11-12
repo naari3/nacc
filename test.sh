@@ -106,5 +106,6 @@ try 42 'int num (int a) { a; } int main () { return num(42); }'
 try 55 'int fib (int n) { if (n == 0) return 0; if (n == 1) return 1; return fib(n - 2) + fib(n - 1);  } int main () { return fib(10); }'
 
 try 3 'int main() { int x; int y; x = 3; y = &x; return *y; }'
+try 3 'int main() { int x; int y; int z; x = 3; y = 5; z = &y + 8; return *z; }'
 
 echo OK
